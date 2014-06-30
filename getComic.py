@@ -1,8 +1,6 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # encoding: utf-8
 
-from __future__ import print_function
-from __future__ import unicode_literals
 import requests
 import base64
 import re
@@ -36,7 +34,7 @@ def getContent(id):
     return (comicName, count, sortedContentList)
 
 def getImgList(contentJson, id):
-    cid = contentJson.keys()[0]
+    cid = list(contentJson.keys())[0]
     getPicHashURL = 'http://m.ac.qq.com/View/mGetPicHash?id={}&cid={}'.format(id, cid)
     picJsonPage = requestSession.get(getPicHashURL).text
     picJson = json.loads(picJsonPage)
@@ -54,7 +52,7 @@ def getImgList(contentJson, id):
         m = imgDict['pid']
         j = int(id)
         uin = max(j + k + m, 10001)
-        l = [j % 1000 / 100, j % 100, j, k]
+        l = [j % 1000 // 100, j % 100, j, k]
         n = '/mif800/' + '/'.join(str(j) for j in l) + '/'
         h = str(m) + '.mif2'
         g="http://ac.tc.qq.com/store_file_download?buid=15017&uin="+str(uin)+"&dir_path="+n+"&name="+h
