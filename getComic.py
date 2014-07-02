@@ -105,9 +105,10 @@ def main():
     for content in contentList:
         try:
             print('正在下载第{0:0>4}话: {1}'.format(i + 1, contentNameList[i]))
+            contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i + 1, contentNameList[i]))
         except Exception:
             print('正在下载第{0:0>4}话: {1}'.format(i + 1))
-        contentPath = os.path.join(comicPath, '第{0:0>4}话'.format(i + 1))
+            contentPath = os.path.join(comicPath, '第{0:0>4}话'.format(i + 1))
         if not os.path.isdir(contentPath):
             os.mkdir(contentPath)
         imgList = getImgList(content, id)
