@@ -102,12 +102,15 @@ def main():
     print()
     i = 0
     for content in contentList:
+        contentPath = os.path.join(comicPath, '第{0:0>4}话'.format(i + 1))
         try:
             print('正在下载第{0:0>4}话: {1}'.format(i + 1, contentNameList[i]))
-            contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i + 1, contentNameList[i]))
+            #如果章节名有左右斜杠时，不创建带有章节名的目录，因为这是路径分隔符
+            forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
+            if not forbiddenRE.search(contentNameList[i]):
+                contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i + 1, contentNameList[i]))
         except Exception:
             print('正在下载第{0:0>4}话: {1}'.format(i + 1))
-            contentPath = os.path.join(comicPath, '第{0:0>4}话'.format(i + 1))
         if not os.path.isdir(contentPath):
             os.mkdir(contentPath)
         imgList = getImgList(content, id)
