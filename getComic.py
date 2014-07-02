@@ -77,7 +77,7 @@ def downloadImg(imgUrlList, contentPath):
 
 def main():
     #url = 'http://ac.qq.com/Comic/comicInfo/id/511915'
-    url = 'http://ac.qq.com/Comic/ComicInfo/id/17114'
+    url = 'http://m.ac.qq.com/Comic/comicInfo/id/505430'
     #url = 'http://m.ac.qq.com/Comic/comicInfo/id/511915'
     #url = 'http://ac.qq.com/Comic/comicInfo/id/518333'   #要爬取的漫画首页
     path = 'C:\\Users\\FJP\\Desktop'
@@ -93,15 +93,21 @@ def main():
     print('漫画名: {}'.format(comicName))
     print('章节数: {}'.format(count))
     print('章节列表:')
-    print('\n'.join(contentNameList))
+    try:
+        print('\n'.join(contentNameList))
+    except Exception:
+        print('章节列表包含无法解析的特殊字符\n')
     comicPath = os.path.join(path, comicName)
     if not os.path.isdir(comicPath):
         os.mkdir(comicPath)
     print()
     i = 0
     for content in contentList:
-        print('正在下载第{0:0>4}话: {1}'.format(i + 1, contentNameList[i]))
-        contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i + 1, contentNameList[i]))
+        try:
+            print('正在下载第{0:0>4}话: {1}'.format(i + 1, contentNameList[i]))
+        except Exception:
+            print('正在下载第{0:0>4}话: {1}'.format(i + 1))
+        contentPath = os.path.join(comicPath, '第{0:0>4}话'.format(i + 1))
         if not os.path.isdir(contentPath):
             os.mkdir(contentPath)
         imgList = getImgList(content, id)
