@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 import requests
-import base64
 import re
 import json
 import os
