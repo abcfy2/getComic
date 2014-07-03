@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
+'''***本代码仅供学习交流使用，严禁用于非法用途，各种PR都欢迎***'''
+
 import requests
 import re
 import json
