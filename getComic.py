@@ -71,16 +71,23 @@ def downloadImg(imgUrlList, contentPath):
     count = len(imgUrlList)
     print('该集漫画共计{}张图片'.format(count))
     i = 1
+
     for imgUrl in imgUrlList:
-        print('\r正在下载第{}张图片...'.format(i), end='')
+        print('\r正在下载第{}张图片...'.format(i), end = '')
         imgPath = os.path.join(contentPath, '{0:0>3}.jpg'.format(i))
+        i += 1
+        
+        #判断是否需要重新下载
+        if os.path.isfile(imgPath):
+            continue
+
         downloadRequest = requestSession.get(imgUrl, stream=True)
         with open(imgPath, 'wb') as f:
             for chunk in downloadRequest.iter_content(chunk_size=1024): 
                 if chunk: # filter out keep-alive new chunks
                     f.write(chunk)
                     f.flush()
-        i += 1
+
     print('完毕!\n')
 
 def main():
@@ -89,7 +96,8 @@ def main():
     #url = 'http://ac.qq.com/Comic/ComicInfo/id/512742'
     #url = 'http://m.ac.qq.com/Comic/comicInfo/id/511915'
     #url = 'http://ac.qq.com/naruto'
-    url = 'http://ac.qq.com/onepiece'
+    #url = 'http://ac.qq.com/onepiece'
+    url = 'http://ac.qq.com/dragonball'
     #url = 'http://ac.qq.com/Comic/comicInfo/id/518333'   #要爬取的漫画首页
     path = 'C:\\Users\\FJP\\Desktop'
     #path = '/home/fengyu'  #下载图片存放路径
