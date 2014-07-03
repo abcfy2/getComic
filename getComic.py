@@ -77,7 +77,7 @@ def downloadImg(imgUrlList, contentPath):
         imgPath = os.path.join(contentPath, '{0:0>3}.jpg'.format(i))
         i += 1
         
-        #判断是否需要重新下载
+        #目标文件存在就跳过下载
         if os.path.isfile(imgPath):
             continue
 
