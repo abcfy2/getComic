@@ -8,9 +8,16 @@ import os
 
 
 requestSession = requests.session()
+UA = 'Mozilla/5.0 (iPad; CPU OS 5_1 like Mac OS X; en-us) \
+        AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 \
+        Mobile/9B176 Safari/7534.48.3' # ipad UA
+requestSession.headers.update({'User-Agent': UA})
 
 def getId(url):
-    numRE = re.compile(r'\d+')
+    numRE = re.compile(r'\d+$')
+    if not numRE.search(url):
+        get_id_request = requestSession.get(url)
+        url = get_id_request.url
     id = numRE.findall(url)[0]
     return id    
 
@@ -76,8 +83,11 @@ def downloadImg(imgUrlList, contentPath):
 
 def main():
     #url = 'http://ac.qq.com/Comic/comicInfo/id/511915'
-    url = 'http://m.ac.qq.com/Comic/comicInfo/id/505430'
+    #url = 'http://m.ac.qq.com/Comic/comicInfo/id/505430'
+    #url = 'http://ac.qq.com/Comic/ComicInfo/id/512742'
     #url = 'http://m.ac.qq.com/Comic/comicInfo/id/511915'
+    #url = 'http://ac.qq.com/naruto'
+    url = 'http://ac.qq.com/onepiece'
     #url = 'http://ac.qq.com/Comic/comicInfo/id/518333'   #要爬取的漫画首页
     path = 'C:\\Users\\FJP\\Desktop'
     #path = '/home/fengyu'  #下载图片存放路径
