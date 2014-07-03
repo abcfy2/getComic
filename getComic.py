@@ -81,12 +81,18 @@ def downloadImg(imgUrlList, contentPath):
         if os.path.isfile(imgPath):
             continue
 
-        downloadRequest = requestSession.get(imgUrl, stream=True)
-        with open(imgPath, 'wb') as f:
-            for chunk in downloadRequest.iter_content(chunk_size=1024): 
-                if chunk: # filter out keep-alive new chunks
-                    f.write(chunk)
-                    f.flush()
+        try:
+            downloadRequest = requestSession.get(imgUrl, stream=True)
+            with open(imgPath, 'wb') as f:
+                for chunk in downloadRequest.iter_content(chunk_size=1024): 
+                    if chunk: # filter out keep-alive new chunks
+                        f.write(chunk)
+                        f.flush()
+        except (KeyboardInterrupt, SystemExit):
+            print('\n\n中断下载，删除未下载完的文件！')
+            if os.path.isfile(imgPath):
+                os.remove(imgPath)
+            exit(1)
 
     print('完毕!\n')
 
