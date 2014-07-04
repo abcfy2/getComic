@@ -165,7 +165,7 @@ def main(url, path):
 if __name__ == '__main__':
     defaultPath = os.path.expanduser('~/tencent_comic')
 
-    parser = argparse.ArgumentParser(description='下载腾讯漫画，仅供学习交流，请勿用于非法用途。\
+    parser = argparse.ArgumentParser(description='*下载腾讯漫画，仅供学习交流，请勿用于非法用途*。\
             空参运行进入交互式模式运行。')
     parser.add_argument('-u', '--url', help='要下载的漫画的首页，可以下载以下类型的url： \n \
             http://ac.qq.com/Comic/comicInfo/id/511915\n \

@@ -3,7 +3,7 @@ getComic
 
 ***本代码仅供学习交流使用，严禁用于非法用途，各种PR都欢迎***
 
-下载腾讯漫画的脚本。脚本暂未完成，README暂时未写完。目前将要下载的漫画首页写入脚本执行即可。
+下载腾讯漫画的脚本。空参运行进入交互式模式，支持的参数可以加``-h``或``--help``参数查看。
 
 **依赖**:
 
@@ -14,13 +14,29 @@ ubuntu系列系统使用以下命令安装依赖：
 
     sudo apt-get update ; sudo apt-get install python3 python3-requests
 
-URL格式: 漫画首页的URL，如``http://m.ac.qq.com/Comic/view/id/518333``(移动版) 或 ``http://ac.qq.com/Comic/comicInfo/id/17114``(PC版)。即有数字id的。
+URL格式: 漫画首页的URL，如``http://m.ac.qq.com/Comic/view/id/518333``(移动版) 或 ``http://ac.qq.com/Comic/comicInfo/id/17114``, ``http://ac.qq.com/naruto``(PC版)
+
+**命令行帮助**
+
+```bash
+ ./getComic.py -h
+usage: getComic.py [-h] [-u URL] [-p PATH]
+
+下载腾讯漫画，仅供学习交流，请勿用于非法用途。 空参运行进入交互式模式运行。
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -u URL, --url URL     要下载的漫画的首页，可以下载以下类型的url：
+                        http://ac.qq.com/Comic/comicInfo/id/511915
+                        http://m.ac.qq.com/Comic/comicInfo/id/505430
+                        http://ac.qq.com/naruto
+  -p PATH, --path PATH  漫画下载路径。 默认: /home/fengyu/tencent_comic
+```
 
 **更新日志**
-
-2014-04-03更新： 伪续传实现，判断目标文件路径存在就跳过下载（腾讯应该加入了防刷机制，无法通过head请求得到的content-length判断究竟是否需要重下，因为for循环+head请求过快，会被ban掉，造成异常退出）
-
-2014-07-03更新： 使用ipad的UA，这样访问非id的URL，会跳转为``http://m.ac.qq.com``这样带有id的移动版URL，可以搞定``http://ac.qq.com/naruto``或``http://ac.qq.com/onepiece``这一类非id结尾的URL。
+* 2014-07-04更新： 加入命令行参数支持功能
+* 2014-07-03更新： 伪续传实现，判断目标文件路径存在就跳过下载（腾讯应该加入了防刷机制，无法通过head请求得到的content-length判断究竟是否需要重下，因为for循环+head请求过快，会被ban掉，造成异常退出）
+* 2014-07-03更新： 使用ipad的UA，这样访问非id的URL，会跳转为``http://m.ac.qq.com``这样带有id的移动版URL，可以搞定``http://ac.qq.com/naruto``或``http://ac.qq.com/onepiece``这一类非id结尾的URL。
 
 下一步计划：
 
