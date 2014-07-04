@@ -7,6 +7,7 @@ import requests
 import re
 import json
 import os
+import argparse
 
 
 requestSession = requests.session()
@@ -15,7 +16,25 @@ UA = 'Mozilla/5.0 (iPad; CPU OS 5_1 like Mac OS X; en-us) \
         Mobile/9B176 Safari/7534.48.3' # ipad UA
 requestSession.headers.update({'User-Agent': UA})
 
+def isLegelUrl(url):
+    legalUrl1 = re.compile(r'http://ac.qq.com/Comic/comicInfo/id/\d+')
+    legalUrl2 = re.compile(r'http://m.ac.qq.com/Comic/comicInfo/id/\d+')
+    legalUrl3 = re.compile(r'http://ac.qq.com/\w+')
+
+    if legalUrl1.match(url):
+        return True
+    elif legalUrl2.match(url):
+        return True
+    elif legalUrl3.match(url):
+        return True
+    else:
+        return False
+
 def getId(url):
+    if not isLegelUrl(url):
+        print('请输入正确的url！具体支持的url请在命令行输入-h|--help参数查看帮助文档。')
+        exit(1)
+
     numRE = re.compile(r'\d+$')
     if not numRE.search(url):
         get_id_request = requestSession.get(url)
@@ -96,17 +115,17 @@ def downloadImg(imgUrlList, contentPath):
 
     print('完毕!\n')
 
-def main():
+def main(url, path):
+    '''url: 要爬取的漫画首页。 path: 漫画下载路径'''
     #url = 'http://ac.qq.com/Comic/comicInfo/id/511915'
     #url = 'http://m.ac.qq.com/Comic/comicInfo/id/505430'
     #url = 'http://ac.qq.com/Comic/ComicInfo/id/512742'
     #url = 'http://m.ac.qq.com/Comic/comicInfo/id/511915'
     #url = 'http://ac.qq.com/naruto'
     #url = 'http://ac.qq.com/onepiece'
-    url = 'http://ac.qq.com/dragonball'
+    #url = 'http://ac.qq.com/dragonball'
+    #url = 'http://ac.qq.com/Comic/comicInfo/id/8777'
     #url = 'http://ac.qq.com/Comic/comicInfo/id/518333'   #要爬取的漫画首页
-    path = 'C:\\Users\\FJP\\Desktop'
-    #path = '/home/fengyu'  #下载图片存放路径
     if not os.path.isdir(path):
        os.mkdir(path)
     id = getId(url)
@@ -144,4 +163,24 @@ def main():
         i += 1
     
 if __name__ == '__main__':
-    main()
+    defaultPath = os.path.expanduser('~/tencent_comic')
+
+    parser = argparse.ArgumentParser(description='下载腾讯漫画，仅供学习交流，请勿用于非法用途。\
+            空参运行进入交互式模式运行。')
+    parser.add_argument('-u', '--url', help='要下载的漫画的首页，可以下载以下类型的url： \n \
+            http://ac.qq.com/Comic/comicInfo/id/511915\n \
+            http://m.ac.qq.com/Comic/comicInfo/id/505430\n \
+            http://ac.qq.com/naruto')
+    parser.add_argument('-p', '--path', help='漫画下载路径。 默认: {}'.format(defaultPath), 
+                default=defaultPath)
+    args = parser.parse_args()
+    url = args.url
+    path = args.path
+
+    if not url:
+        url = input('请输入漫画首页地址: ')
+        path = input('请输入漫画保存路径(默认: {}): '.format(defaultPath))
+        if not path:
+            path = defaultPath
+
+    main(url, path)
