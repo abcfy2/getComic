@@ -36,10 +36,19 @@ def getId(url):
         exit(1)
 
     numRE = re.compile(r'\d+$')
+    
     if not numRE.search(url):
         get_id_request = requestSession.get(url)
         url = get_id_request.url
+        if not isLegelUrl(url):
+            print('无法自动跳转移动端URL，请进入http://m.ac.qq.com，找到'
+            '该漫画地址。\n'
+            '地址应该像这样: '
+            'http://m.ac.qq.com/Comic/comicInfo/id/xxxxx (xxxxx为整数)')
+            exit(2)
+            
     id = numRE.findall(url)[0]
+    
     return id    
 
 def getContent(id):
@@ -111,7 +120,7 @@ def downloadImg(imgUrlList, contentPath):
             print('\n\n中断下载，删除未下载完的文件！')
             if os.path.isfile(imgPath):
                 os.remove(imgPath)
-            exit(1)
+            exit(3)
 
     print('完毕!\n')
 
@@ -167,10 +176,10 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(description='*下载腾讯漫画，仅供学习交流，请勿用于非法用途*。\
             空参运行进入交互式模式运行。')
-    parser.add_argument('-u', '--url', help='要下载的漫画的首页，可以下载以下类型的url： \n \
-            http://ac.qq.com/Comic/comicInfo/id/511915\n \
-            http://m.ac.qq.com/Comic/comicInfo/id/505430\n \
-            http://ac.qq.com/naruto')
+    parser.add_argument('-u', '--url', help='要下载的漫画的首页，可以下载以下类型的url: \n'
+            'http://ac.qq.com/Comic/comicInfo/id/511915\n'
+            'http://m.ac.qq.com/Comic/comicInfo/id/505430\n'
+            'http://ac.qq.com/naruto')
     parser.add_argument('-p', '--path', help='漫画下载路径。 默认: {}'.format(defaultPath), 
                 default=defaultPath)
     args = parser.parse_args()
