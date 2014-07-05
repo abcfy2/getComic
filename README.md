@@ -34,6 +34,7 @@ optional arguments:
 ```
 
 **更新日志**
+* 2014-07-05更新： CF漫画地址 (http://ac.qq.com/cf) 无法跳转至对应的移动端URL，这一类地址将给出错误提示并退出
 * 2014-07-04更新： 加入命令行参数支持功能
 * 2014-07-03更新： 伪续传实现，判断目标文件路径存在就跳过下载（腾讯应该加入了防刷机制，无法通过head请求得到的content-length判断究竟是否需要重下，因为for循环+head请求过快，会被ban掉，造成异常退出）
 * 2014-07-03更新： 使用ipad的UA，这样访问非id的URL，会跳转为``http://m.ac.qq.com``这样带有id的移动版URL，可以搞定``http://ac.qq.com/naruto``或``http://ac.qq.com/onepiece``这一类非id结尾的URL。
