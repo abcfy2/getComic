@@ -136,7 +136,7 @@ def main(url, path):
     #url = 'http://ac.qq.com/Comic/comicInfo/id/8777'
     #url = 'http://ac.qq.com/Comic/comicInfo/id/518333'   #要爬取的漫画首页
     if not os.path.isdir(path):
-       os.mkdir(path)
+       os.makedirs(path)
     id = getId(url)
     comicName,count,contentList = getContent(id)
     contentNameList = []
