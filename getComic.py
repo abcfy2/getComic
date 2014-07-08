@@ -132,7 +132,7 @@ def parseLIST(lst):
     #先逗号分割字符串，分割后的字符串再用短横杠分割
     parsedLIST = []
     sublist = lst.split(',')
-    numRE = re.compile('^\d+$')
+    numRE = re.compile(r'^\d+$')
 
     for sub in sublist:
         if numRE.match(sub):
@@ -146,7 +146,6 @@ def parseLIST(lst):
             minnum = min(splitnum)       #min-max或max-min都支持
             if minnum == 0:
                 minnum = 1               #忽略数字0
-            else:
                 print('警告: 参数中包括不存在的章节0，自动忽略')
             parsedLIST.extend(range(minnum, maxnum+1))
 
@@ -155,15 +154,6 @@ def parseLIST(lst):
 
 def main(url, path, lst=None):
     '''url: 要爬取的漫画首页。 path: 漫画下载路径。 lst: 要下载的章节列表'''
-    #url = 'http://ac.qq.com/Comic/comicInfo/id/511915'
-    #url = 'http://m.ac.qq.com/Comic/comicInfo/id/505430'
-    #url = 'http://ac.qq.com/Comic/ComicInfo/id/512742'
-    #url = 'http://m.ac.qq.com/Comic/comicInfo/id/511915'
-    #url = 'http://ac.qq.com/naruto'
-    #url = 'http://ac.qq.com/onepiece'
-    #url = 'http://ac.qq.com/dragonball'
-    #url = 'http://ac.qq.com/Comic/comicInfo/id/8777'
-    #url = 'http://ac.qq.com/Comic/comicInfo/id/518333'   #要爬取的漫画首页
     if not os.path.isdir(path):
        os.makedirs(path)
     id = getId(url)
