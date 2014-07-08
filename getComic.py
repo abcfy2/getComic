@@ -9,7 +9,6 @@ import json
 import os
 import argparse
 
-
 requestSession = requests.session()
 UA = 'Mozilla/5.0 (iPad; CPU OS 5_1 like Mac OS X; en-us) \
         AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 \
@@ -124,8 +123,38 @@ def downloadImg(imgUrlList, contentPath):
 
     print('完毕!\n')
 
-def main(url, path):
-    '''url: 要爬取的漫画首页。 path: 漫画下载路径'''
+def parseLIST(lst):
+    '''解析命令行中的-l|--list参数，返回解析后的章节列表'''
+    legalListRE = re.compile(r'^\d+([,-]\d+)*$')
+    if not legalListRE.match(lst):
+        raise LISTFormatError(lst + ' 不匹配正则: ' + r'^\d+([,-]\d+)*$')
+
+    #先逗号分割字符串，分割后的字符串再用短横杠分割
+    parsedLIST = []
+    sublist = lst.split(',')
+    numRE = re.compile('^\d+$')
+
+    for sub in sublist:
+        if numRE.match(sub):
+            if int(sub) > 0: #自动忽略掉数字0
+                parsedLIST.append(int(sub))
+            else:
+                print('警告: 参数中包括不存在的章节0，自动忽略')
+        else:
+            splitnum = list(map(int, sub.split('-')))
+            maxnum = max(splitnum)
+            minnum = min(splitnum)       #min-max或max-min都支持
+            if minnum == 0:
+                minnum = 1               #忽略数字0
+            else:
+                print('警告: 参数中包括不存在的章节0，自动忽略')
+            parsedLIST.extend(range(minnum, maxnum+1))
+
+    parsedLIST = sorted(set(parsedLIST)) #按照从小到大的顺序排序并去重
+    return parsedLIST
+
+def main(url, path, lst=None):
+    '''url: 要爬取的漫画首页。 path: 漫画下载路径。 lst: 要下载的章节列表'''
     #url = 'http://ac.qq.com/Comic/comicInfo/id/511915'
     #url = 'http://m.ac.qq.com/Comic/comicInfo/id/505430'
     #url = 'http://ac.qq.com/Comic/ComicInfo/id/512742'
@@ -154,37 +183,63 @@ def main(url, path):
     if not os.path.isdir(comicPath):
         os.mkdir(comicPath)
     print()
-    i = 0
-    for content in contentList:
-        contentPath = os.path.join(comicPath, '第{0:0>4}话'.format(i + 1))
+    
+    if not lst:
+        contentRange = range(1, len(contentList))
+    else:
+        contentRange = parseLIST(lst)
+
+    for i in contentRange:
+        if i > len(contentList):
+            print('警告: 章节总数 {} ,'
+                    '参数中包含过大数值,'
+                    '自动忽略'.format(len(contentList)))
+            break
+
+        contentPath = os.path.join(comicPath, '第{0:0>4}话'.format(i))
+
         try:
-            print('正在下载第{0:0>4}话: {1}'.format(i + 1, contentNameList[i]))
+            print('正在下载第{0:0>4}话: {1}'.format(i, contentNameList[i -1]))
             #如果章节名有左右斜杠时，不创建带有章节名的目录，因为这是路径分隔符
             forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
-            if not forbiddenRE.search(contentNameList[i]):
-                contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i + 1, contentNameList[i]))
+            if not forbiddenRE.search(contentNameList[i - 1]):
+                contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i, contentNameList[i - 1]))
         except Exception:
-            print('正在下载第{0:0>4}话: {1}'.format(i + 1))
+            print('正在下载第{0:0>4}话: {1}'.format(i))
+
         if not os.path.isdir(contentPath):
             os.mkdir(contentPath)
-        imgList = getImgList(content, id)
+
+        imgList = getImgList(contentList[i - 1], id)
         downloadImg(imgList, contentPath)
-        i += 1
     
 if __name__ == '__main__':
     defaultPath = os.path.expanduser('~/tencent_comic')
 
-    parser = argparse.ArgumentParser(description='*下载腾讯漫画，仅供学习交流，请勿用于非法用途*。\
-            空参运行进入交互式模式运行。')
+    parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
+                                     description='*下载腾讯漫画，仅供学习交流，请勿用于非法用途*\n'
+                                     '空参运行进入交互式模式运行。')
     parser.add_argument('-u', '--url', help='要下载的漫画的首页，可以下载以下类型的url: \n'
             'http://ac.qq.com/Comic/comicInfo/id/511915\n'
             'http://m.ac.qq.com/Comic/comicInfo/id/505430\n'
             'http://ac.qq.com/naruto')
     parser.add_argument('-p', '--path', help='漫画下载路径。 默认: {}'.format(defaultPath), 
                 default=defaultPath)
+    parser.add_argument('-l', '--list', help=("要下载的漫画章节列表，不指定则下载所有章节。格式范例: \n"
+                                              "N - 下载具体某一章节，如-l 1, 下载第1章\n"
+                                              'N,N... - 下载某几个不连续的章节，如 "-l 1,3,5", 下载1,3,5章\n'
+                                              'N-N... - 下载某一段连续的章节，如 "-l 10-50", 下载[10,50]章\n'
+                                              '杂合型 - 结合上面所有的规则，如 "-l 1,3,5-7,11-111"'))
     args = parser.parse_args()
     url = args.url
     path = args.path
+    lst = args.list
+
+    if lst:
+        legalListRE = re.compile(r'^\d+([,-]\d+)*$')
+        if not legalListRE.match(lst):
+            print('LIST参数不合法，请参考--help键入合法参数！')
+            exit(1)
 
     if not url:
         url = input('请输入漫画首页地址: ')
@@ -192,4 +247,4 @@ if __name__ == '__main__':
         if not path:
             path = defaultPath
 
-    main(url, path)
+    main(url, path, lst)
