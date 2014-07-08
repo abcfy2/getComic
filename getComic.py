@@ -175,7 +175,7 @@ def main(url, path, lst=None):
     print()
     
     if not lst:
-        contentRange = range(1, len(contentList))
+        contentRange = range(1, len(contentList) + 1)
     else:
         contentRange = parseLIST(lst)
 
