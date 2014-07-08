@@ -153,7 +153,7 @@ def parseLIST(lst):
     return parsedLIST
 
 def main(url, path, lst=None):
-    '''url: 要爬取的漫画首页。 path: 漫画下载路径。 lst: 要下载的章节列表'''
+    '''url: 要爬取的漫画首页。 path: 漫画下载路径。 lst: 要下载的章节列表(-l|--list后面的参数)'''
     if not os.path.isdir(path):
        os.makedirs(path)
     id = getId(url)
