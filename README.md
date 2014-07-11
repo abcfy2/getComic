@@ -13,6 +13,7 @@ getComic
 ubuntu系列系统使用以下命令安装依赖：
 
     sudo apt-get update ; sudo apt-get install python3 python3-requests
+    sudo apt-get install python3-pyqt5 #GUI依赖，暂未完成
 
 URL格式: 漫画首页的URL，如``http://m.ac.qq.com/Comic/view/id/518333``(移动版) 或 ``http://ac.qq.com/Comic/comicInfo/id/17114``, ``http://ac.qq.com/naruto``(PC版)
 
@@ -40,6 +41,7 @@ optional arguments:
 ```
 
 **更新日志**
+* 2014-07-11更新： 开坑，GUI走起！提交一个基本框架，使用python3-pyqt5的GUI框架。此次递交文件： 6110571122f923a398604ca7faff18615c961683
 * 2014-07-08更新： 增加-l|--list参数，指定需要下载的章节范围，相关issue: [#2](https://github.com/abcfy2/getComic/issues/2)
 * 2014-07-05更新： CF漫画地址 (http://ac.qq.com/cf) 无法跳转至对应的移动端URL，这一类地址将给出错误提示并退出
 * 2014-07-04更新： 加入命令行参数支持功能
