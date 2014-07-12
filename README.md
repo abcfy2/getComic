@@ -9,6 +9,7 @@ getComic
 
 * python3
 * 第三方类库[requests](http://docs.python-requests.org/en/latest/user/install/#install)
+* [python3-pyqt5](http://www.riverbankcomputing.co.uk/software/pyqt/download5) (GUI依赖，暂未完成)
 
 ubuntu系列系统使用以下命令安装依赖：
 
@@ -52,4 +53,4 @@ optional arguments:
 
 * ~~实现火影等无id的页面下载~~(已解决)
 * ~~实现完整的命令行参数~~(已解决)
-* (待定)一个图形界面(可能会用pyqt)
+* (开坑中...)一个图形界面(可能会用pyqt)
