@@ -16,8 +16,8 @@ UA = 'Mozilla/5.0 (iPad; CPU OS 5_1 like Mac OS X; en-us) \
 requestSession.headers.update({'User-Agent': UA})
 
 def isLegelUrl(url):
-    legalUrl1 = re.compile(r'http://ac.qq.com/Comic/comicInfo/id/\d+')
-    legalUrl2 = re.compile(r'http://m.ac.qq.com/Comic/comicInfo/id/\d+')
+    legalUrl1 = re.compile(r'http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+')
+    legalUrl2 = re.compile(r'http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+')
     legalUrl3 = re.compile(r'http://ac.qq.com/\w+')
 
     if legalUrl1.match(url):
@@ -56,6 +56,7 @@ def getContent(id):
     comicInfoJson = getComicInfo.text
     comicInfo = json.loads(comicInfoJson)
     comicName = comicInfo['title']
+    comicIntrd = comicInfo['brief_intrd']
     getChapterListUrl = 'http://m.ac.qq.com/GetData/getChapterList?id={}'.format(id)
     getChapterList = requestSession.get(getChapterListUrl)
     contentJson = json.loads(getChapterList.text)
@@ -66,7 +67,7 @@ def getContent(id):
             if isinstance(contentJson[item], dict) and contentJson[item]['seq'] == i:
                 sortedContentList.append({item: contentJson[item]})
                 break
-    return (comicName, count, sortedContentList)
+    return (comicName, comicIntrd, count, sortedContentList)
 
 def getImgList(contentJson, id):
     cid = list(contentJson.keys())[0]
@@ -157,12 +158,13 @@ def main(url, path, lst=None):
     if not os.path.isdir(path):
        os.makedirs(path)
     id = getId(url)
-    comicName,count,contentList = getContent(id)
+    comicName,comicIntrd,count,contentList = getContent(id)
     contentNameList = []
     for item in contentList:
         for k in item:
             contentNameList.append(item[k]['t'])
     print('漫画名: {}'.format(comicName))
+    print('简介: {}'.format(comicIntrd))
     print('章节数: {}'.format(count))
     print('章节列表:')
     try:
