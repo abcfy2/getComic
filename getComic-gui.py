@@ -34,6 +34,7 @@ class TencentComicDownloader(QWidget):
         chapterGroupBox = QGroupBox("章节列表:")
         
         self.chapterListView = QListWidget(chapterGroupBox)
+        self.chapterListView.setSelectionMode(QAbstractItemView.ExtendedSelection)
 
         groupBoxLayout = QHBoxLayout(chapterGroupBox)
         groupBoxLayout.addWidget(self.chapterListView)
