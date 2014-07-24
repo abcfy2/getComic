@@ -44,6 +44,8 @@ class TencentComicDownloader(QWidget):
 
         self.downloadButton = QPushButton("下载选中")
         self.statusLabel = QLabel("输入要下载的漫画的首页，然后点分析")
+        self.statusLabel.setWordWrap(True)
+
         self.downloadButton.setEnabled(False)
         self.downloadButton.clicked.connect(self.download)
 
@@ -169,11 +171,11 @@ class Downloader(QThread):
                 outputString = '正在下载第{0:0>4}话: {1}...'.format(i+1, self.contentNameList[i])
                 print(outputString)
                 self.output.emit(outputString)
-                contentPath = os.path.join(self.comicPath, '第{0:0>4}话'.format(i))
+                contentPath = os.path.join(self.comicPath, '第{0:0>4}话'.format(i+1))
                 
                 #如果章节名有左右斜杠时，不创建带有章节名的目录，因为这是路径分隔符
                 forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
-                if not forbiddenRE.search(self.contentNameList[i - 1]):
+                if not forbiddenRE.search(self.contentNameList[i]):
                     contentPath = os.path.join(self.comicPath, '第{0:0>4}话-{1}'.format(i+1, self.contentNameList[i]))
 
                 if not os.path.isdir(contentPath):
@@ -183,8 +185,9 @@ class Downloader(QThread):
                 
                 self.output.emit('完毕!')
        
-        except:
-            self.output.emit('<font color="red">{}<font>'.format(traceback.print_exc()))
+        except Exception as e:
+            self.output.emit('<font color="red">{}<font>\n遇到异常尝试重新点击下载按钮重试'.format(e))
+            raise
 
         finally:
             self.finished.emit()
