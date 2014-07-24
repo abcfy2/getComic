@@ -111,6 +111,7 @@ class TencentComicDownloader(QWidget):
                 self.comicIntro.setText(self.comicIntrd)
                 self.chapterListView.setEnabled(True)
                 self.downloadButton.setEnabled(True)
+                self.chapterListView.setFocus()
                 self.statusLabel.setText('选择要下载的章节后点击右侧按钮')
 
                 for i in range(len(self.contentNameList)):

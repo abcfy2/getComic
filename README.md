@@ -5,6 +5,12 @@ getComic
 
 下载腾讯漫画的脚本。空参运行进入交互式模式，支持的参数可以加``-h``或``--help``参数查看。
 
+**GUI版本提供windows下打包好的版本**
+
+[点此下载](http://bcs.duapp.com/myownstore/getcomic-pack.7z)
+
+使用[cx\_freeze](http://cx-freeze.sourceforge.net/)打包
+
 **依赖**:
 
 * python3
