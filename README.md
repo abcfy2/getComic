@@ -47,6 +47,19 @@ optional arguments:
                         杂合型 - 结合上面所有的规则，如 "-l 1,3,5-7,11-111"
 ```
 
+**GUI预览效果**
+
+支持不连续的章节选择下载
+
+windows预览效果：
+
+![](http://static.oschina.net/uploads/space/2014/0724/222236_2rb7_1395553.jpg)
+![](http://static.oschina.net/uploads/space/2014/0724/222329_Pife_1395553.jpg)
+
+deepin/Linux 预览效果：
+
+![](http://static.oschina.net/uploads/space/2014/0724/223412_4Hz4_1395553.jpg)
+
 **更新日志**
 * 2014-07-24更新： 完成GUI界面基本功能
 * 2014-07-11更新： 开坑，GUI走起！提交一个基本框架，使用python3-pyqt5的GUI框架。此次递交文件： 6110571122f923a398604ca7faff18615c961683
