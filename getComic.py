@@ -15,10 +15,21 @@ UA = 'Mozilla/5.0 (iPad; CPU OS 5_1 like Mac OS X; en-us) \
         Mobile/9B176 Safari/7534.48.3' # ipad UA
 requestSession.headers.update({'User-Agent': UA})
 
+class ErrorCode(Exception):
+    '''自定义错误码:
+        1: URL不正确
+        2: URL无法跳转为移动端URL
+        3: 中断下载'''
+    def __init__(self, code):
+        self.code = code
+
+    def __str__(self):
+        return repr(self.code)
+
 def isLegelUrl(url):
-    legalUrl1 = re.compile(r'http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+')
-    legalUrl2 = re.compile(r'http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+')
-    legalUrl3 = re.compile(r'http://ac.qq.com/\w+')
+    legalUrl1 = re.compile(r'^http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+$')
+    legalUrl2 = re.compile(r'^http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+$')
+    legalUrl3 = re.compile(r'^http://ac.qq.com/\w+$')
 
     if legalUrl1.match(url):
         return True
@@ -32,7 +43,7 @@ def isLegelUrl(url):
 def getId(url):
     if not isLegelUrl(url):
         print('请输入正确的url！具体支持的url请在命令行输入-h|--help参数查看帮助文档。')
-        exit(1)
+        raise ErrorCode(1)
 
     numRE = re.compile(r'\d+$')
     
@@ -44,7 +55,7 @@ def getId(url):
             '该漫画地址。\n'
             '地址应该像这样: '
             'http://m.ac.qq.com/Comic/comicInfo/id/xxxxx (xxxxx为整数)')
-            exit(2)
+            raise ErrorCode(2)
             
     id = numRE.findall(url)[0]
     
@@ -120,7 +131,7 @@ def downloadImg(imgUrlList, contentPath):
             print('\n\n中断下载，删除未下载完的文件！')
             if os.path.isfile(imgPath):
                 os.remove(imgPath)
-            exit(3)
+            raise ErrorCode(3)
 
     print('完毕!\n')
 
@@ -155,55 +166,59 @@ def parseLIST(lst):
 
 def main(url, path, lst=None):
     '''url: 要爬取的漫画首页。 path: 漫画下载路径。 lst: 要下载的章节列表(-l|--list后面的参数)'''
-    if not os.path.isdir(path):
-       os.makedirs(path)
-    id = getId(url)
-    comicName,comicIntrd,count,contentList = getContent(id)
-    contentNameList = []
-    for item in contentList:
-        for k in item:
-            contentNameList.append(item[k]['t'])
-    print('漫画名: {}'.format(comicName))
-    print('简介: {}'.format(comicIntrd))
-    print('章节数: {}'.format(count))
-    print('章节列表:')
     try:
-        print('\n'.join(contentNameList))
-    except Exception:
-        print('章节列表包含无法解析的特殊字符\n')
-    comicPath = os.path.join(path, comicName)
-    if not os.path.isdir(comicPath):
-        os.mkdir(comicPath)
-    print()
-    
-    if not lst:
-        contentRange = range(1, len(contentList) + 1)
-    else:
-        contentRange = parseLIST(lst)
-
-    for i in contentRange:
-        if i > len(contentList):
-            print('警告: 章节总数 {} ,'
-                    '参数中包含过大数值,'
-                    '自动忽略'.format(len(contentList)))
-            break
-
-        contentPath = os.path.join(comicPath, '第{0:0>4}话'.format(i))
-
+        if not os.path.isdir(path):
+           os.makedirs(path)
+        id = getId(url)
+        comicName,comicIntrd,count,contentList = getContent(id)
+        contentNameList = []
+        for item in contentList:
+            for k in item:
+                contentNameList.append(item[k]['t'])
+        print('漫画名: {}'.format(comicName))
+        print('简介: {}'.format(comicIntrd))
+        print('章节数: {}'.format(count))
+        print('章节列表:')
         try:
-            print('正在下载第{0:0>4}话: {1}'.format(i, contentNameList[i -1]))
-            #如果章节名有左右斜杠时，不创建带有章节名的目录，因为这是路径分隔符
-            forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
-            if not forbiddenRE.search(contentNameList[i - 1]):
-                contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i, contentNameList[i - 1]))
+            print('\n'.join(contentNameList))
         except Exception:
-            print('正在下载第{0:0>4}话: {1}'.format(i))
+            print('章节列表包含无法解析的特殊字符\n')
+        comicPath = os.path.join(path, comicName)
+        if not os.path.isdir(comicPath):
+            os.mkdir(comicPath)
+        print()
+        
+        if not lst:
+            contentRange = range(1, len(contentList) + 1)
+        else:
+            contentRange = parseLIST(lst)
 
-        if not os.path.isdir(contentPath):
-            os.mkdir(contentPath)
+        for i in contentRange:
+            if i > len(contentList):
+                print('警告: 章节总数 {} ,'
+                        '参数中包含过大数值,'
+                        '自动忽略'.format(len(contentList)))
+                break
 
-        imgList = getImgList(contentList[i - 1], id)
-        downloadImg(imgList, contentPath)
+            contentPath = os.path.join(comicPath, '第{0:0>4}话'.format(i))
+
+            try:
+                print('正在下载第{0:0>4}话: {1}'.format(i, contentNameList[i -1]))
+                #如果章节名有左右斜杠时，不创建带有章节名的目录，因为这是路径分隔符
+                forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
+                if not forbiddenRE.search(contentNameList[i - 1]):
+                    contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i, contentNameList[i - 1]))
+            except Exception:
+                print('正在下载第{0:0>4}话: {1}'.format(i))
+
+            if not os.path.isdir(contentPath):
+                os.mkdir(contentPath)
+
+            imgList = getImgList(contentList[i - 1], id)
+            downloadImg(imgList, contentPath)
+
+    except ErrorCode as e:
+        exit(e.code)
     
 if __name__ == '__main__':
     defaultPath = os.path.expanduser('~/tencent_comic')
