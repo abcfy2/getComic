@@ -187,7 +187,8 @@ class Downloader(QThread):
                 self.output.emit('完毕!')
        
         except Exception as e:
-            self.output.emit('<font color="red">{}<font>\n遇到异常尝试重新点击下载按钮重试'.format(e))
+            self.output.emit('<font color="red">{}</font>\n'
+                    '遇到异常!请尝试重新点击下载按钮重试'.format(e))
             raise
 
         finally:
