@@ -61,6 +61,7 @@ deepin/Linux 预览效果：
 ![](http://static.oschina.net/uploads/space/2014/0724/223412_4Hz4_1395553.jpg)
 
 **更新日志**
+* 2014-07-26更新： GUI小细节优化——下载完毕后重新聚焦listview。默认下载路径分隔符windows和linux统一风格
 * 2014-07-24更新： 完成GUI界面基本功能
 * 2014-07-11更新： 开坑，GUI走起！提交一个基本框架，使用python3-pyqt5的GUI框架。此次递交文件： https://github.com/abcfy2/getComic/commit/6110571122f923a398604ca7faff18615c961683
 * 2014-07-08更新： 增加-l|--list参数，指定需要下载的章节范围，相关issue: [#2](https://github.com/abcfy2/getComic/issues/2)
