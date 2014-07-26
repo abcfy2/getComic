@@ -82,6 +82,7 @@ class TencentComicDownloader(QWidget):
 
         if enable:
             self.downloadButton.setText('下载选中')
+            self.chapterListView.setFocus()
 
     def getPath(self):
         path = str(QFileDialog.getExistingDirectory(self, "选择下载目录"))
