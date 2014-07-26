@@ -20,7 +20,7 @@ class TencentComicDownloader(QWidget):
 
         pathLineLabel = QLabel("下载路径:")
         self.pathLine = QLineEdit()
-        defaultPath = os.path.expanduser('~/tencent_comic')
+        defaultPath = os.path.join(os.path.expanduser('~'), 'tencent_comic')
         self.pathLine.setText(defaultPath)
         
         self.browseButton = QPushButton("浏览")

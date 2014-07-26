@@ -221,7 +221,7 @@ def main(url, path, lst=None):
         exit(e.code)
     
 if __name__ == '__main__':
-    defaultPath = os.path.expanduser('~/tencent_comic')
+    defaultPath = os.path.join(os.path.expanduser('~'), 'tencent_comic')
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                      description='*下载腾讯漫画，仅供学习交流，请勿用于非法用途*\n'
