@@ -7,7 +7,7 @@ getComic
 
 **GUI版本提供windows下打包好的版本**
 
-[点此下载](http://bcs.duapp.com/myownstore/getcomic-pack.7z)
+[点此下载](http://bcs.duapp.com/myownstore/getcomic-pack.7z) (用右键-另存为，直接打开可能遇到BAE抽风，提示页面不存在)
 
 使用[cx\_freeze](http://cx-freeze.sourceforge.net/)打包
 
