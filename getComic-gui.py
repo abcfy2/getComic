@@ -13,10 +13,12 @@ class TencentComicDownloader(QWidget):
         super(TencentComicDownloader, self).__init__(parent)
 
         nameLabel = QLabel("漫画首页:")
+
         self.nameLine = QLineEdit()
 
         self.analysisButton = QPushButton("分析")
         self.analysisButton.clicked.connect(self.anaysisURL)
+        self.nameLine.returnPressed.connect(self.analysisButton.click)
 
         pathLineLabel = QLabel("下载路径:")
         self.pathLine = QLineEdit()
