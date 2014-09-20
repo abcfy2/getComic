@@ -128,7 +128,7 @@ class TencentComicDownloader(QWidget):
 
         except getComic.ErrorCode as e:
             if e.code == 2:
-                self.statusLabel.setText('<font color="red">无法跳转为移动端URL,请使用http://m.ac.qq.com</font>')
+                self.statusLabel.setText('<font color="red">无法跳转为移动端URL,请进入http://m.ac.qq.com找到该漫画地址</font>')
 
         except KeyError:
             self.statusLabel.setText('<font color="red">不存在的地址</font>')

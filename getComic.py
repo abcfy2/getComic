@@ -50,16 +50,16 @@ def getId(url):
     if not numRE.search(url):
         get_id_request = requestSession.get(url)
         url = get_id_request.url
-        if not isLegelUrl(url):
+        id = numRE.findall(url)
+        if not isLegelUrl(url) or not id:
             print('无法自动跳转移动端URL，请进入http://m.ac.qq.com，找到'
             '该漫画地址。\n'
             '地址应该像这样: '
             'http://m.ac.qq.com/Comic/comicInfo/id/xxxxx (xxxxx为整数)')
             raise ErrorCode(2)
             
-    id = numRE.findall(url)[0]
     
-    return id    
+    return id[0] 
 
 def getContent(id):
     getComicInfoUrl = 'http://m.ac.qq.com/GetData/getComicInfo?id={}'.format(id)
