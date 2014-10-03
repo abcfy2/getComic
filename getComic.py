@@ -47,7 +47,8 @@ def getId(url):
 
     numRE = re.compile(r'\d+$')
     
-    if not numRE.search(url):
+    id = numRE.findall(url)
+    if not id:
         get_id_request = requestSession.get(url)
         url = get_id_request.url
         id = numRE.findall(url)
@@ -57,9 +58,8 @@ def getId(url):
             '地址应该像这样: '
             'http://m.ac.qq.com/Comic/comicInfo/id/xxxxx (xxxxx为整数)')
             raise ErrorCode(2)
-            
-    
-    return id[0] 
+
+    return id[0]
 
 def getContent(id):
     getComicInfoUrl = 'http://m.ac.qq.com/GetData/getComicInfo?id={}'.format(id)
