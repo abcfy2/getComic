@@ -75,7 +75,7 @@ def getContent(id):
     sortedContentList = []
     for i in range(count + 1):
         for item in contentJson:
-            if isinstance(contentJson[item], dict) and contentJson[item]['seq'] == i:
+            if isinstance(contentJson[item], dict) and contentJson[item].get('seq') == i:
                 sortedContentList.append({item: contentJson[item]})
                 break
     return (comicName, comicIntrd, count, sortedContentList)
