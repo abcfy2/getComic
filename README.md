@@ -24,6 +24,8 @@ ubuntu系列系统使用以下命令安装依赖：
 
 URL格式: 漫画首页的URL，如``http://m.ac.qq.com/Comic/view/id/518333``(移动版) 或 ``http://ac.qq.com/Comic/comicInfo/id/17114``, ``http://ac.qq.com/naruto``(PC版)
 
+**注意**: 火影忍者彩漫需要访问``m.ac.qq.com``搜索火影忍者，因为PC端页面火影忍者彩漫和黑白漫画是一个id一个url。
+
 **命令行帮助**
 
 ```bash
