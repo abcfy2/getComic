@@ -142,11 +142,9 @@ class TencentComicDownloader(QWidget):
 
         path = self.pathLine.text()
         comicName = self.comicName
-
+        forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
+        comicName = re.sub(forbiddenRE, '_', comicName) #将windows下的非法字符一律替换为_
         comicPath = os.path.join(path, comicName)
-
-        if not os.path.isdir(path):
-            os.makedirs(path)
 
         if not os.path.isdir(comicPath):
             os.makedirs(comicPath)
@@ -175,13 +173,9 @@ class Downloader(QThread):
                 outputString = '正在下载第{0:0>4}话: {1}...'.format(i+1, self.contentNameList[i])
                 print(outputString)
                 self.output.emit(outputString)
-                contentPath = os.path.join(self.comicPath, '第{0:0>4}话'.format(i+1))
-                
-                #如果章节名有左右斜杠时，不创建带有章节名的目录，因为这是路径分隔符
                 forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
-                if not forbiddenRE.search(self.contentNameList[i]):
-                    contentPath = os.path.join(self.comicPath, '第{0:0>4}话-{1}'.format(i+1, self.contentNameList[i]))
-
+                self.contentNameList[i] = re.sub(forbiddenRE, '_', self.contentNameList[i])
+                contentPath = os.path.join(self.comicPath, '第{0:0>4}话-{1}'.format(i+1, self.contentNameList[i]))
                 if not os.path.isdir(contentPath):
                     os.mkdir(contentPath)
                 imgList = getComic.getImgList(self.contentList[i], self.id)

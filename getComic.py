@@ -27,18 +27,17 @@ class ErrorCode(Exception):
         return repr(self.code)
 
 def isLegelUrl(url):
-    legalUrl1 = re.compile(r'^http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+/?$')
-    legalUrl2 = re.compile(r'^http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+/?$')
-    legalUrl3 = re.compile(r'^http://ac.qq.com/\w+/?$')
+    legal_url_list = [
+        re.compile(r'^http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+/?$'),
+        re.compile(r'^http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+/?$'),
+        re.compile(r'^http://ac.qq.com/\w+/?$'),
+        re.compile(r'^http://pad.ac.qq.com/Comic/[Cc]omicInfo/id/\d+/?$')
+    ]
 
-    if legalUrl1.match(url):
-        return True
-    elif legalUrl2.match(url):
-        return True
-    elif legalUrl3.match(url):
-        return True
-    else:
-        return False
+    for legal_url in legal_url_list:
+        if legal_url.match(url):
+            return True
+    return False
 
 def getId(url):
     if not isLegelUrl(url):
@@ -62,13 +61,13 @@ def getId(url):
     return id[0]
 
 def getContent(id):
-    getComicInfoUrl = 'http://m.ac.qq.com/GetData/getComicInfo?id={}'.format(id)
+    getComicInfoUrl = 'http://pad.ac.qq.com/GetData/getComicInfo?id={}'.format(id)
     getComicInfo = requestSession.get(getComicInfoUrl)
     comicInfoJson = getComicInfo.text
     comicInfo = json.loads(comicInfoJson)
     comicName = comicInfo['title']
     comicIntrd = comicInfo['brief_intrd']
-    getChapterListUrl = 'http://m.ac.qq.com/GetData/getChapterList?id={}'.format(id)
+    getChapterListUrl = 'http://pad.ac.qq.com/GetData/getChapterList?id={}'.format(id)
     getChapterList = requestSession.get(getChapterListUrl)
     contentJson = json.loads(getChapterList.text)
     count = contentJson['length']
@@ -82,7 +81,7 @@ def getContent(id):
 
 def getImgList(contentJson, id):
     cid = list(contentJson.keys())[0]
-    getPicHashURL = 'http://m.ac.qq.com/View/mGetPicHash?id={}&cid={}'.format(id, cid)
+    getPicHashURL = 'http://pad.ac.qq.com/View/mGetPicHash?id={}&cid={}'.format(id, cid)
     picJsonPage = requestSession.get(getPicHashURL).text
     picJson = json.loads(picJsonPage)
     count = picJson['pCount']    #统计图片数量
@@ -183,9 +182,12 @@ def main(url, path, lst=None):
             print('\n'.join(contentNameList))
         except Exception:
             print('章节列表包含无法解析的特殊字符\n')
+            
+        forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
+        comicName = re.sub(forbiddenRE, '_', comicName) #将windows下的非法字符一律替换为_
         comicPath = os.path.join(path, comicName)
         if not os.path.isdir(comicPath):
-            os.mkdir(comicPath)
+            os.makedirs(comicPath)
         print()
         
         if not lst:
@@ -200,14 +202,11 @@ def main(url, path, lst=None):
                         '自动忽略'.format(len(contentList)))
                 break
 
-            contentPath = os.path.join(comicPath, '第{0:0>4}话'.format(i))
+            contentNameList[i - 1] = re.sub(forbiddenRE, '_', contentNameList[i - 1]) #将windows下的非法字符一律替换为_
+            contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i, contentNameList[i - 1]))
 
             try:
                 print('正在下载第{0:0>4}话: {1}'.format(i, contentNameList[i -1]))
-                #如果章节名有左右斜杠时，不创建带有章节名的目录，因为这是路径分隔符
-                forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
-                if not forbiddenRE.search(contentNameList[i - 1]):
-                    contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i, contentNameList[i - 1]))
             except Exception:
                 print('正在下载第{0:0>4}话: {1}'.format(i))
 
@@ -229,6 +228,7 @@ if __name__ == '__main__':
     parser.add_argument('-u', '--url', help='要下载的漫画的首页，可以下载以下类型的url: \n'
             'http://ac.qq.com/Comic/comicInfo/id/511915\n'
             'http://m.ac.qq.com/Comic/comicInfo/id/505430\n'
+            'http://pad.ac.qq.com/Comic/comicInfo/id/505430\n'
             'http://ac.qq.com/naruto')
     parser.add_argument('-p', '--path', help='漫画下载路径。 默认: {}'.format(defaultPath), 
                 default=defaultPath)
