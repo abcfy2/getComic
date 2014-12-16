@@ -29,8 +29,7 @@ URL格式: 漫画首页的URL，如``http://m.ac.qq.com/Comic/view/id/518333``(�
 **命令行帮助**
 
 ```bash
-./getComic.py -h
-usage: getComic.py [-h] [-u URL] [-p PATH] [-l LIST]
+usage: getComic.py [-h] [-u URL] [-p PATH] [-d] [-l LIST]
 
 *下载腾讯漫画，仅供学习交流，请勿用于非法用途*
 空参运行进入交互式模式运行。
@@ -40,8 +39,10 @@ optional arguments:
   -u URL, --url URL     要下载的漫画的首页，可以下载以下类型的url: 
                         http://ac.qq.com/Comic/comicInfo/id/511915
                         http://m.ac.qq.com/Comic/comicInfo/id/505430
+                        http://pad.ac.qq.com/Comic/comicInfo/id/505430
                         http://ac.qq.com/naruto
   -p PATH, --path PATH  漫画下载路径。 默认: /home/fengyu/tencent_comic
+  -d, --dir             将所有图片下载到一个目录(适合腾讯漫画等软件连看使用)
   -l LIST, --list LIST  要下载的漫画章节列表，不指定则下载所有章节。格式范例: 
                         N - 下载具体某一章节，如-l 1, 下载第1章
                         N,N... - 下载某几个不连续的章节，如 "-l 1,3,5", 下载1,3,5章
@@ -63,6 +64,7 @@ deepin/Linux 预览效果：
 ![](http://static.oschina.net/uploads/space/2014/0724/223412_4Hz4_1395553.jpg)
 
 **更新日志**
+* 2014-12-26更新： 新增小功能——单目录下载模式，适合导入腾讯漫画等看图工具连续观看
 * 2014-07-26更新： GUI小细节优化——下载完毕后重新聚焦listview。默认下载路径分隔符windows和linux统一风格
 * 2014-07-24更新： 完成GUI界面基本功能
 * 2014-07-11更新： 开坑，GUI走起！提交一个基本框架，使用python3-pyqt5的GUI框架。此次递交文件： https://github.com/abcfy2/getComic/commit/6110571122f923a398604ca7faff18615c961683
