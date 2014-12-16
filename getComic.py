@@ -105,14 +105,17 @@ def getImgList(contentJson, id):
         imgList.append(g)
     return imgList
 
-def downloadImg(imgUrlList, contentPath):
+def downloadImg(imgUrlList, contentPath, one_folder=False):
     count = len(imgUrlList)
     print('该集漫画共计{}张图片'.format(count))
     i = 1
 
     for imgUrl in imgUrlList:
         print('\r正在下载第{}张图片...'.format(i), end = '')
-        imgPath = os.path.join(contentPath, '{0:0>3}.jpg'.format(i))
+        if not one_folder:
+            imgPath = os.path.join(contentPath, '{0:0>3}.jpg'.format(i))
+        else:
+            imgPath = contentPath + '{0:0>3}.jpg'.format(i)
         i += 1
         
         #目标文件存在就跳过下载
@@ -163,7 +166,7 @@ def parseLIST(lst):
     parsedLIST = sorted(set(parsedLIST)) #按照从小到大的顺序排序并去重
     return parsedLIST
 
-def main(url, path, lst=None):
+def main(url, path, lst=None, one_folder=False):
     '''url: 要爬取的漫画首页。 path: 漫画下载路径。 lst: 要下载的章节列表(-l|--list后面的参数)'''
     try:
         if not os.path.isdir(path):
@@ -210,11 +213,12 @@ def main(url, path, lst=None):
             except Exception:
                 print('正在下载第{0:0>4}话: {1}'.format(i))
 
-            if not os.path.isdir(contentPath):
-                os.mkdir(contentPath)
+            if not one_folder:
+                if not os.path.isdir(contentPath):
+                    os.mkdir(contentPath)
 
             imgList = getImgList(contentList[i - 1], id)
-            downloadImg(imgList, contentPath)
+            downloadImg(imgList, contentPath, one_folder)
 
     except ErrorCode as e:
         exit(e.code)
@@ -232,6 +236,7 @@ if __name__ == '__main__':
             'http://ac.qq.com/naruto')
     parser.add_argument('-p', '--path', help='漫画下载路径。 默认: {}'.format(defaultPath), 
                 default=defaultPath)
+    parser.add_argument('-d', '--dir', action='store_true', help='将所有图片下载到一个目录(适合腾讯漫画等软件连看使用)')
     parser.add_argument('-l', '--list', help=("要下载的漫画章节列表，不指定则下载所有章节。格式范例: \n"
                                               "N - 下载具体某一章节，如-l 1, 下载第1章\n"
                                               'N,N... - 下载某几个不连续的章节，如 "-l 1,3,5", 下载1,3,5章\n'
@@ -241,6 +246,7 @@ if __name__ == '__main__':
     url = args.url
     path = args.path
     lst = args.list
+    one_folder = args.dir
 
     if lst:
         legalListRE = re.compile(r'^\d+([,-]\d+)*$')
@@ -254,4 +260,4 @@ if __name__ == '__main__':
         if not path:
             path = defaultPath
 
-    main(url, path, lst)
+    main(url, path, lst, one_folder)

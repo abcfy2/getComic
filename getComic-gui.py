@@ -30,6 +30,7 @@ class TencentComicDownloader(QWidget):
 
         comicNameLabel = QLabel("漫画名: ")
         self.comicNameLabel = QLabel("暂无")
+        self.one_folder_checkbox = QCheckBox("单目录")
         
         comicIntroLabel = QLabel("简介: ")
         self.comicIntro = QLabel("暂无")
@@ -60,12 +61,12 @@ class TencentComicDownloader(QWidget):
         mainLayout.addWidget(self.browseButton, 1, 2)
         mainLayout.addWidget(comicNameLabel, 2, 0)
         mainLayout.addWidget(self.comicNameLabel, 2, 1, 1, 2)
+        mainLayout.addWidget(self.one_folder_checkbox, 2, 2)
         mainLayout.addWidget(comicIntroLabel, 3, 0)
         mainLayout.addWidget(self.comicIntro, 3, 1, 1, 2)
         mainLayout.addWidget(chapterGroupBox, 4, 0, 1, 3)
         mainLayout.addWidget(self.downloadButton, 5, 2)
         mainLayout.addWidget(self.statusLabel, 5, 0, 1, 2)
-
 
         self.setLayout(mainLayout)
         self.setWindowTitle("腾讯漫画下载")
@@ -135,6 +136,7 @@ class TencentComicDownloader(QWidget):
 
     def download(self):
         self.downloadButton.setText("下载中...")
+        one_folder = self.one_folder_checkbox.isChecked()
 
         self.enableWidget(False)
 
@@ -149,7 +151,7 @@ class TencentComicDownloader(QWidget):
         if not os.path.isdir(comicPath):
             os.makedirs(comicPath)
 
-        self.downloadThread = Downloader(selectedChapterList, comicPath, self.contentList, self.contentNameList, self.id)
+        self.downloadThread = Downloader(selectedChapterList, comicPath, self.contentList, self.contentNameList, self.id, one_folder)
         self.downloadThread.output.connect(self.setStatus)
         self.downloadThread.finished.connect(lambda: self.enableWidget(True))
         self.downloadThread.start()
@@ -158,7 +160,7 @@ class Downloader(QThread):
     output = pyqtSignal(['QString'])
     finished = pyqtSignal()
 
-    def __init__(self, selectedChapterList, comicPath, contentList, contentNameList, id, parent=None):
+    def __init__(self, selectedChapterList, comicPath, contentList, contentNameList, id, one_folder=False, parent=None):
         super(Downloader, self).__init__(parent)
 
         self.selectedChapterList = selectedChapterList
@@ -166,6 +168,7 @@ class Downloader(QThread):
         self.contentList = contentList
         self.contentNameList = contentNameList
         self.id = id
+        self.one_folder = one_folder
 
     def run(self):
         try:
@@ -176,10 +179,11 @@ class Downloader(QThread):
                 forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
                 self.contentNameList[i] = re.sub(forbiddenRE, '_', self.contentNameList[i])
                 contentPath = os.path.join(self.comicPath, '第{0:0>4}话-{1}'.format(i+1, self.contentNameList[i]))
-                if not os.path.isdir(contentPath):
-                    os.mkdir(contentPath)
+                if not self.one_folder:
+                    if not os.path.isdir(contentPath):
+                        os.mkdir(contentPath)
                 imgList = getComic.getImgList(self.contentList[i], self.id)
-                getComic.downloadImg(imgList, contentPath)
+                getComic.downloadImg(imgList, contentPath, self.one_folder)
                 
                 self.output.emit('完毕!')
        
