@@ -76,12 +76,17 @@ class TencentComicDownloader(QWidget):
         self.statusLabel.setText(status)
 
     def enableWidget(self, enable):
-        self.downloadButton.setEnabled(enable)
-        self.nameLine.setEnabled(enable)
-        self.pathLine.setEnabled(enable)
-        self.chapterListView.setEnabled(enable)
-        self.analysisButton.setEnabled(enable)
-        self.browseButton.setEnabled(enable)
+        widgets_list = [
+                self.downloadButton,
+                self.nameLine,
+                self.pathLine,
+                self.chapterListView,
+                self.analysisButton,
+                self.browseButton,
+                self.one_folder_checkbox
+        ]
+        for widget in widgets_list:
+            widget.setEnabled(enable)
 
         if enable:
             self.downloadButton.setText('下载选中')
