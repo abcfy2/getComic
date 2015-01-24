@@ -62,7 +62,8 @@ def getId(url):
 
 def getContent(id):
     getComicInfoUrl = 'http://pad.ac.qq.com/GetData/getComicInfo?id={}'.format(id)
-    requestSession.headers.update({'Cookie': 'ac_refer=http://pad.ac.qq.com/Comic/comicInfo/id/'+id})
+    requestSession.headers.update({'Cookie': 'ac_refer=http://pad.ac.qq.com'})
+    requestSession.headers.update({'Referer': 'http://pad.ac.qq.com'})
     getComicInfo = requestSession.get(getComicInfoUrl)
     comicInfoJson = getComicInfo.text
     comicInfo = json.loads(comicInfoJson)
