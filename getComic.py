@@ -10,9 +10,10 @@ import os
 import argparse
 
 requestSession = requests.session()
-UA = 'Mozilla/5.0 (iPad; CPU OS 5_1 like Mac OS X; en-us) \
-        AppleWebKit/534.46 (KHTML, like Gecko) Version/5.1 \
-        Mobile/9B176 Safari/7534.48.3' # ipad UA
+UA = 'Mozilla/5.0 (Linux; U; Android 4.0.3; zh-CN; \
+HTC Velocity 4G X710s Build/IML74K) AppleWebKit/534.30 \
+(KHTML, like Gecko) Version/4.0 UCBrowser/10.1.3.546 \
+U3/0.8.0 Mobile Safari/534.30' # UC UA
 requestSession.headers.update({'User-Agent': UA})
 
 class ErrorCode(Exception):
@@ -61,15 +62,15 @@ def getId(url):
     return id[0]
 
 def getContent(id):
-    getComicInfoUrl = 'http://pad.ac.qq.com/GetData/getComicInfo?id={}'.format(id)
-    requestSession.headers.update({'Cookie': 'ac_refer=http://pad.ac.qq.com'})
-    requestSession.headers.update({'Referer': 'http://pad.ac.qq.com'})
+    getComicInfoUrl = 'http://m.ac.qq.com/GetData/getComicInfo?id={}'.format(id)
+    requestSession.cookies.update({'ac_refer': 'http://m.ac.qq.com'})
+    requestSession.headers.update({'Referer': 'http://m.ac.qq.com/Comic/view/id/{}/cid/1'.format(id)})
     getComicInfo = requestSession.get(getComicInfoUrl)
     comicInfoJson = getComicInfo.text
     comicInfo = json.loads(comicInfoJson)
     comicName = comicInfo['title']
     comicIntrd = comicInfo['brief_intrd']
-    getChapterListUrl = 'http://pad.ac.qq.com/GetData/getChapterList?id={}'.format(id)
+    getChapterListUrl = 'http://m.ac.qq.com/GetData/getChapterList?id={}'.format(id)
     getChapterList = requestSession.get(getChapterListUrl)
     contentJson = json.loads(getChapterList.text)
     count = contentJson['length']
@@ -83,7 +84,7 @@ def getContent(id):
 
 def getImgList(contentJson, id):
     cid = list(contentJson.keys())[0]
-    getPicHashURL = 'http://pad.ac.qq.com/View/mGetPicHash?id={}&cid={}'.format(id, cid)
+    getPicHashURL = 'http://m.ac.qq.com/View/mGetPicHash?id={}&cid={}'.format(id, cid)
     picJsonPage = requestSession.get(getPicHashURL).text
     picJson = json.loads(picJsonPage)
     count = picJson['pCount']    #统计图片数量
