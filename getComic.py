@@ -85,6 +85,7 @@ def getContent(id):
 def getImgList(contentJson, id):
     cid = list(contentJson.keys())[0]
     getPicHashURL = 'http://m.ac.qq.com/View/mGetPicHash?id={}&cid={}'.format(id, cid)
+    requestSession.headers.update({'Referer': 'http://m.ac.qq.com/Comic/view/id/{}/cid/{}'.format(id,cid)})
     picJsonPage = requestSession.get(getPicHashURL).text
     picJson = json.loads(picJsonPage)
     count = picJson['pCount']    #统计图片数量
