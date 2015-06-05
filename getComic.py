@@ -8,6 +8,7 @@ import re
 import json
 import os
 import argparse
+from time import sleep
 
 requestSession = requests.session()
 UA = 'Mozilla/5.0 (Linux; U; Android 4.0.3; zh-CN; \
@@ -86,7 +87,11 @@ def getImgList(contentJson, id):
     cid = list(contentJson.keys())[0]
     getPicHashURL = 'http://m.ac.qq.com/View/mGetPicHash?id={}&cid={}'.format(id, cid)
     requestSession.headers.update({'Referer': 'http://m.ac.qq.com/Comic/view/id/{}/cid/{}'.format(id,cid)})
-    picJsonPage = requestSession.get(getPicHashURL).text
+    try:
+        picJsonPage = requestSession.get(getPicHashURL).text
+    except:
+        sleep(2)
+        picJsonPage = requestSession.get(getPicHashURL).text
     picJson = json.loads(picJsonPage)
     count = picJson['pCount']    #统计图片数量
     pHash = picJson['pHash']
@@ -125,21 +130,29 @@ def downloadImg(imgUrlList, contentPath, one_folder=False):
         #目标文件存在就跳过下载
         if os.path.isfile(imgPath):
             continue
-
-        try:
-            downloadRequest = requestSession.get(imgUrl, stream=True)
-            with open(imgPath, 'wb') as f:
-                for chunk in downloadRequest.iter_content(chunk_size=1024): 
-                    if chunk: # filter out keep-alive new chunks
-                        f.write(chunk)
-                        f.flush()
-        except (KeyboardInterrupt, SystemExit):
-            print('\n\n中断下载，删除未下载完的文件！')
-            if os.path.isfile(imgPath):
-                os.remove(imgPath)
-            raise ErrorCode(3)
-
+        __download_one_img(imgUrl,imgPath)
     print('完毕!\n')
+
+def __download_one_img(imgUrl,imgPath, retry_num=0):
+    try:
+        downloadRequest = requestSession.get(imgUrl, stream=True)
+        with open(imgPath, 'wb') as f:
+            for chunk in downloadRequest.iter_content(chunk_size=1024): 
+                if chunk: # filter out keep-alive new chunks
+                    f.write(chunk)
+                    f.flush()
+    except (KeyboardInterrupt, SystemExit):
+        print('\n\n中断下载，删除未下载完的文件！')
+        if os.path.isfile(imgPath):
+            os.remove(imgPath)
+        raise ErrorCode(3)
+    except:
+        if retry_num == 2:
+            raise
+        retry_num += 1
+        print('下载失败，重试' + str(retry_num) + '次')
+        sleep(2)
+        __download_one_img(imgUrl, imgPath, retry_num)
 
 def parseLIST(lst):
     '''解析命令行中的-l|--list参数，返回解析后的章节列表'''
