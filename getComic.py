@@ -7,7 +7,9 @@ import requests
 import re
 import json
 import os
+import sys
 import argparse
+import threading
 from time import sleep
 
 requestSession = requests.session()
@@ -119,8 +121,8 @@ def downloadImg(imgUrlList, contentPath, one_folder=False):
     print('该集漫画共计{}张图片'.format(count))
     i = 1
 
+    download_threads = []
     for imgUrl in imgUrlList:
-        print('\r正在下载第{}张图片...'.format(i), end = '')
         if not one_folder:
             imgPath = os.path.join(contentPath, '{0:0>3}.jpg'.format(i))
         else:
@@ -130,7 +132,11 @@ def downloadImg(imgUrlList, contentPath, one_folder=False):
         #目标文件存在就跳过下载
         if os.path.isfile(imgPath):
             continue
-        __download_one_img(imgUrl,imgPath)
+        download_thread = threading.Thread(target=__download_one_img, args=(imgUrl,imgPath))
+        download_thread.daemon = True
+        download_threads.append(download_thread)
+        download_thread.start()
+    [ t.join() for t in download_threads ]
     print('完毕!\n')
 
 def __download_one_img(imgUrl,imgPath, retry_num=0):
@@ -141,6 +147,8 @@ def __download_one_img(imgUrl,imgPath, retry_num=0):
                 if chunk: # filter out keep-alive new chunks
                     f.write(chunk)
                     f.flush()
+        print('.', end='')
+        sys.stdout.flush()
     except (KeyboardInterrupt, SystemExit):
         print('\n\n中断下载，删除未下载完的文件！')
         if os.path.isfile(imgPath):

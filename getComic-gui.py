@@ -131,13 +131,13 @@ class TencentComicDownloader(QWidget):
 
             else:
                 self.statusLabel.setText('<font color="red">错误的URL格式！请输入正确的漫画首页地址！</font>')
-
         except getComic.ErrorCode as e:
             if e.code == 2:
                 self.statusLabel.setText('<font color="red">无法跳转为移动端URL,请进入http://m.ac.qq.com找到该漫画地址</font>')
-
         except KeyError:
             self.statusLabel.setText('<font color="red">不存在的地址</font>')
+        except Exception as e:
+            self.statusLabel.setText('<font color="red">{}</font>'.format(e))
 
     def download(self):
         self.downloadButton.setText("下载中...")
