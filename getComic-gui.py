@@ -36,7 +36,7 @@ class TencentComicDownloader(QWidget):
         self.comicIntro = QLabel("暂无")
         self.comicIntro.setWordWrap(True)
 
-        chapterGroupBox = QGroupBox("章节列表:")
+        chapterGroupBox = QGroupBox("章节列表: (按住CTRL点击可不连续选中,鼠标拖拽或按住SHIFT点击首尾可连续选中)")
         
         self.chapterListView = QListWidget(chapterGroupBox)
         self.chapterListView.setSelectionMode(QAbstractItemView.ExtendedSelection)
