@@ -87,7 +87,8 @@ def getContent(id):
 
 def getImgList(contentJson, id):
     cid = list(contentJson.keys())[0]
-    getPicHashURL = 'http://m.ac.qq.com/View/mGetPicHash?id={}&cid={}'.format(id, cid)
+    eid = contentJson.get(cid).get('eid')
+    getPicHashURL = 'http://m.ac.qq.com/View/mGetPicHash?id={}&eid={}'.format(id, eid)
     requestSession.headers.update({'Referer': 'http://m.ac.qq.com/Comic/view/id/{}/cid/{}'.format(id,cid)})
     try:
         picJsonPage = requestSession.get(getPicHashURL).text
