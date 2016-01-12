@@ -1,0 +1,144 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Getcomic by abcfy2</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/main.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <header>
+        <h1>Getcomic</h1>
+        <p>Download tencent comic-下载腾讯漫画</p>
+      </header>
+
+      <div id="banner">
+        <span id="logo"></span>
+
+        <a href="https://github.com/abcfy2/getComic" class="button fork"><strong>View On GitHub</strong></a>
+        <div class="downloads">
+          <span>Downloads:</span>
+          <ul>
+            <li><a href="https://github.com/abcfy2/getComic/zipball/master" class="button">ZIP</a></li>
+            <li><a href="https://github.com/abcfy2/getComic/tarball/master" class="button">TAR</a></li>
+          </ul>
+        </div>
+      </div><!-- end banner -->
+
+    <div class="wrapper">
+      <nav>
+        <ul></ul>
+      </nav>
+      <section>
+        <h1>
+<a id="getcomic" class="anchor" href="#getcomic" aria-hidden="true"><span class="octicon octicon-link"></span></a>getComic</h1>
+
+<p><strong><em>本代码仅供学习交流使用，严禁用于非法用途，各种PR都欢迎</em></strong></p>
+
+<p>下载腾讯漫画的脚本。空参运行进入交互式模式，支持的参数可以加<code>-h</code>或<code>--help</code>参数查看。</p>
+
+<p><strong>GUI版本提供windows下打包好的版本</strong></p>
+
+<p><a href="http://7xjpgb.com1.z0.glb.clouddn.com/getcomic-pack.7z">点此下载</a></p>
+
+<p>使用<a href="http://cx-freeze.sourceforge.net/">cx_freeze</a>打包</p>
+
+<p><strong>依赖</strong>:</p>
+
+<ul>
+<li>python3</li>
+<li>第三方类库<a href="http://docs.python-requests.org/en/latest/user/install/#install">requests</a>
+</li>
+<li>
+<a href="http://www.riverbankcomputing.co.uk/software/pyqt/download5">python3-pyqt5</a> (GUI依赖，不用GUI可不装)</li>
+</ul>
+
+<p>ubuntu系列系统使用以下命令安装依赖：</p>
+
+<pre><code>sudo apt-get update ; sudo apt-get install python3 python3-requests
+sudo apt-get install python3-pyqt5 #GUI依赖，不用GUI可不装
+</code></pre>
+
+<p>URL格式: 漫画首页的URL，如<code>http://m.ac.qq.com/Comic/view/id/518333</code>(移动版) 或 <code>http://ac.qq.com/Comic/comicInfo/id/17114</code>, <code>http://ac.qq.com/naruto</code>(PC版)</p>
+
+<p><strong>注意</strong>: 火影忍者彩漫需要访问<code>m.ac.qq.com</code>搜索火影忍者，因为PC端页面火影忍者彩漫和黑白漫画是一个id一个url。</p>
+
+<p><strong>命令行帮助</strong></p>
+
+<div class="highlight highlight-source-shell"><pre>usage: getComic.py [-h] [-u URL] [-p PATH] [-d] [-l LIST]
+
+<span class="pl-k">*</span>下载腾讯漫画，仅供学习交流，请勿用于非法用途<span class="pl-k">*</span>
+空参运行进入交互式模式运行。
+
+optional arguments:
+  -h, --help            show this <span class="pl-c1">help</span> message and <span class="pl-c1">exit</span>
+  -u URL, --url URL     要下载的漫画的首页，可以下载以下类型的url: 
+                        http://ac.qq.com/Comic/comicInfo/id/511915
+                        http://m.ac.qq.com/Comic/comicInfo/id/505430
+                        http://pad.ac.qq.com/Comic/comicInfo/id/505430
+                        http://ac.qq.com/naruto
+  -p PATH, --path PATH  漫画下载路径。 默认: /home/fengyu/tencent_comic
+  -d, --dir             将所有图片下载到一个目录(适合腾讯漫画等软件连看使用)
+  -l LIST, --list LIST  要下载的漫画章节列表，不指定则下载所有章节。格式范例: 
+                        N - 下载具体某一章节，如-l 1, 下载第1章
+                        N,N... - 下载某几个不连续的章节，如 <span class="pl-s"><span class="pl-pds">"</span>-l 1,3,5<span class="pl-pds">"</span></span>, 下载1,3,5章
+                        N-N... - 下载某一段连续的章节，如 <span class="pl-s"><span class="pl-pds">"</span>-l 10-50<span class="pl-pds">"</span></span>, 下载[10,50]章
+                        杂合型 - 结合上面所有的规则，如 <span class="pl-s"><span class="pl-pds">"</span>-l 1,3,5-7,11-111<span class="pl-pds">"</span></span></pre></div>
+
+<p><strong>GUI预览效果</strong></p>
+
+<p>支持不连续的章节选择下载</p>
+
+<p>windows预览效果：</p>
+
+<p><img src="http://static.oschina.net/uploads/space/2014/0724/222236_2rb7_1395553.jpg" alt="">
+<img src="http://static.oschina.net/uploads/space/2014/0724/222329_Pife_1395553.jpg" alt=""></p>
+
+<p>deepin/Linux 预览效果：</p>
+
+<p><img src="http://static.oschina.net/uploads/space/2014/0724/223412_4Hz4_1395553.jpg" alt=""></p>
+
+<p><strong>更新日志</strong></p>
+
+<ul>
+<li>2014-12-26更新： 新增小功能——单目录下载模式，适合导入腾讯漫画等看图工具连续观看</li>
+<li>2014-07-26更新： GUI小细节优化——下载完毕后重新聚焦listview。默认下载路径分隔符windows和linux统一风格</li>
+<li>2014-07-24更新： 完成GUI界面基本功能</li>
+<li>2014-07-11更新： 开坑，GUI走起！提交一个基本框架，使用python3-pyqt5的GUI框架。此次递交文件： <a href="https://github.com/abcfy2/getComic/commit/6110571122f923a398604ca7faff18615c961683">https://github.com/abcfy2/getComic/commit/6110571122f923a398604ca7faff18615c961683</a>
+</li>
+<li>2014-07-08更新： 增加-l|--list参数，指定需要下载的章节范围，相关issue: <a href="https://github.com/abcfy2/getComic/issues/2">#2</a>
+</li>
+<li>2014-07-05更新： CF漫画地址 (<a href="http://ac.qq.com/cf">http://ac.qq.com/cf</a>) 无法跳转至对应的移动端URL，这一类地址将给出错误提示并退出</li>
+<li>2014-07-04更新： 加入命令行参数支持功能</li>
+<li>2014-07-03更新： 伪续传实现，判断目标文件路径存在就跳过下载（腾讯应该加入了防刷机制，无法通过head请求得到的content-length判断究竟是否需要重下，因为for循环+head请求过快，会被ban掉，造成异常退出）</li>
+<li>2014-07-03更新： 使用ipad的UA，这样访问非id的URL，会跳转为<code>http://m.ac.qq.com</code>这样带有id的移动版URL，可以搞定<code>http://ac.qq.com/naruto</code>或<code>http://ac.qq.com/onepiece</code>这一类非id结尾的URL。</li>
+</ul>
+
+<p>下一步计划：</p>
+
+<ul>
+<li>
+<del>实现火影等无id的页面下载</del>(已解决)</li>
+<li>
+<del>实现完整的命令行参数</del>(已解决)</li>
+<li><del>一个图形界面(pyqt5实现)</del></li>
+</ul>
+      </section>
+      <footer>
+        <p>Project maintained by <a href="https://github.com/abcfy2">abcfy2</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></small></p>
+      </footer>
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
