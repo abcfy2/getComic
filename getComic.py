@@ -34,8 +34,8 @@ def isLegelUrl(url):
     legal_url_list = [
         re.compile(r'^http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+/?$'),
         re.compile(r'^http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+/?$'),
+        re.compile(r'^http://m.ac.qq.com/comic/index/id/\d+/?$'),
         re.compile(r'^http://ac.qq.com/\w+/?$'),
-        re.compile(r'^http://pad.ac.qq.com/Comic/[Cc]omicInfo/id/\d+/?$')
     ]
 
     for legal_url in legal_url_list:
@@ -85,37 +85,60 @@ def getContent(id):
                 break
     return (comicName, comicIntrd, count, sortedContentList)
 
-def getImgList(contentJson, id):
+def getImgList(contentJson, comic_id):
     cid = list(contentJson.keys())[0]
-    eid = contentJson.get(cid).get('eid')
-    getPicHashURL = 'http://m.ac.qq.com/View/mGetPicHash?id={}&eid={}'.format(id, eid)
-    requestSession.headers.update({'Referer': 'http://m.ac.qq.com/Comic/view/id/{}/cid/{}'.format(id,cid)})
-    try:
-        picJsonPage = requestSession.get(getPicHashURL).text
-    except:
-        sleep(2)
-        picJsonPage = requestSession.get(getPicHashURL).text
-    picJson = json.loads(picJsonPage)
-    count = picJson['pCount']    #统计图片数量
-    pHash = picJson['pHash']
-    sortedImgDictList = []
-    for i in range(1, count + 1):
-        for item in pHash:
-            if pHash[item]['seq'] == i:
-                sortedImgDictList.append(pHash[item])
-                break
+    cid_page = requestSession.get('http://m.ac.qq.com/chapter/index/id/{0}/cid/{1}'.format(comic_id, cid)).text
+    base64data = re.findall(r"data:\s*'(.+?)'", cid_page)[0][1:]
+    img_detail_json = json.loads(__decode_base64_data(base64data))
     imgList = []
-    for imgDict in sortedImgDictList:
-        k = imgDict['cid']
-        m = imgDict['pid']
-        j = int(id)
-        uin = max(j + k + m, 10001)
-        l = [j % 1000 // 100, j % 100, j, k]
-        n = '/mif800/' + '/'.join(str(j) for j in l) + '/'
-        h = str(m) + '.mif2'
-        g="http://ac.tc.qq.com/store_file_download?buid=15017&uin="+str(uin)+"&dir_path="+n+"&name="+h
-        imgList.append(g)
+    for img_url in img_detail_json.get('picture'):
+        imgList.append(img_url['url'])
     return imgList
+
+def __decode_base64_data(base64data):
+    base64DecodeChars = [- 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1]
+    data_length = len(base64data)
+    i = 0
+    out = ""
+    c1 = c2 = c3 = c4 = 0
+    while i < data_length:
+        while True:
+            c1 = base64DecodeChars[ord(base64data[i]) & 255]
+            i += 1
+            if not (i < data_length and c1 == -1):
+                break
+        if c1 == -1:
+            break
+        while True:
+            c2 = base64DecodeChars[ord(base64data[i]) & 255]
+            i += 1
+            if not (i < data_length and c2 == -1):
+                break
+        if c2 == -1:
+            break
+        out += chr(c1 << 2 | (c2 & 48) >> 4)
+        while True:
+            c3 = ord(base64data[i]) & 255
+            i += 1
+            if c3 == 61:
+                return out
+            c3 = base64DecodeChars[c3]
+            if not (i < data_length and c3 == - 1):
+                break
+        if c3 == -1:
+            break
+        out += chr((c2 & 15) << 4 | (c3 & 60) >> 2)
+        while True:
+            c4 = ord(base64data[i]) & 255
+            i += 1
+            if c4 == 61:
+                return out
+            c4 = base64DecodeChars[c4]
+            if not (i < data_length and c4 == - 1):
+                break
+        out += chr((c3 & 3) << 6 | c4)
+    return out
+
 
 def downloadImg(imgUrlList, contentPath, one_folder=False):
     count = len(imgUrlList)
