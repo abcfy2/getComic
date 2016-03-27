@@ -290,8 +290,7 @@ if __name__ == '__main__':
                                      '空参运行进入交互式模式运行。')
     parser.add_argument('-u', '--url', help='要下载的漫画的首页，可以下载以下类型的url: \n'
             'http://ac.qq.com/Comic/comicInfo/id/511915\n'
-            'http://m.ac.qq.com/Comic/comicInfo/id/505430\n'
-            'http://pad.ac.qq.com/Comic/comicInfo/id/505430\n'
+            'http://m.ac.qq.com/comic/index/id/505430\n'
             'http://ac.qq.com/naruto')
     parser.add_argument('-p', '--path', help='漫画下载路径。 默认: {}'.format(defaultPath), 
                 default=defaultPath)
