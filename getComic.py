@@ -31,9 +31,9 @@ class ErrorCode(Exception):
 
 def isLegelUrl(url):
     legal_url_list = [
-        re.compile(r'^http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+?$'),
-        re.compile(r'^http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+?$'),
-        re.compile(r'^http://m.ac.qq.com/comic/index/id/\d+?$'),
+        re.compile(r'^http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+?'),
+        re.compile(r'^http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+?'),
+        re.compile(r'^http://m.ac.qq.com/comic/index/id/\d+?'),
         re.compile(r'^http://ac.qq.com/\w+/?$'),
     ]
 
