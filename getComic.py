@@ -13,10 +13,9 @@ import threading
 from time import sleep
 
 requestSession = requests.session()
-UA = 'Mozilla/5.0 (Linux; U; Android 4.0.3; zh-CN; \
-HTC Velocity 4G X710s Build/IML74K) AppleWebKit/534.30 \
-(KHTML, like Gecko) Version/4.0 UCBrowser/10.1.3.546 \
-U3/0.8.0 Mobile Safari/534.30' # UC UA
+UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
+      AppleWebKit/537.36 (KHTML, like Gecko) \
+      Chrome/52.0.2743.82 Safari/537.36'  # Chrome on win10
 requestSession.headers.update({'User-Agent': UA})
 
 class ErrorCode(Exception):
@@ -32,9 +31,9 @@ class ErrorCode(Exception):
 
 def isLegelUrl(url):
     legal_url_list = [
-        re.compile(r'^http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+/?$'),
-        re.compile(r'^http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+/?$'),
-        re.compile(r'^http://m.ac.qq.com/comic/index/id/\d+/?$'),
+        re.compile(r'^http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+?$'),
+        re.compile(r'^http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+?$'),
+        re.compile(r'^http://m.ac.qq.com/comic/index/id/\d+?$'),
         re.compile(r'^http://ac.qq.com/\w+/?$'),
     ]
 
