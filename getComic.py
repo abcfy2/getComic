@@ -86,8 +86,9 @@ def getContent(id):
 
 def getImgList(contentJson, comic_id):
     cid = list(contentJson.keys())[0]
-    cid_page = requestSession.get('http://m.ac.qq.com/chapter/index/id/{0}/cid/{1}'.format(comic_id, cid)).text
-    base64data = re.findall(r"data:\s*'(.+?)'", cid_page)[0][1:]
+    requestSession.headers.update({'Referer': 'http://ac.qq.com/Comic/comicInfo/id/{}'.format(comic_id)})
+    cid_page = requestSession.get('http://ac.qq.com/ComicView/index/id/{0}/cid/{1}'.format(comic_id, cid)).text
+    base64data = re.findall(r"DATA\s*=\s*'(.+?)'", cid_page)[0][1:]
     img_detail_json = json.loads(__decode_base64_data(base64data))
     imgList = []
     for img_url in img_detail_json.get('picture'):
