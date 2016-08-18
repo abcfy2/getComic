@@ -85,15 +85,31 @@ def getContent(id):
     return (comicName, comicIntrd, count, sortedContentList)
 
 def getImgList(contentJson, comic_id):
-    cid = list(contentJson.keys())[0]
-    requestSession.headers.update({'Referer': 'http://ac.qq.com/Comic/comicInfo/id/{}'.format(comic_id)})
-    cid_page = requestSession.get('http://ac.qq.com/ComicView/index/id/{0}/cid/{1}'.format(comic_id, cid)).text
-    base64data = re.findall(r"DATA\s*=\s*'(.+?)'", cid_page)[0][1:]
-    img_detail_json = json.loads(__decode_base64_data(base64data))
-    imgList = []
-    for img_url in img_detail_json.get('picture'):
-        imgList.append(img_url['url'])
-    return imgList
+    retry_num = 0
+    retry_max = 5
+    while True:
+        try:
+            cid = list(contentJson.keys())[0]
+            requestSession.headers.update({'Referer': 'http://ac.qq.com/Comic/comicInfo/id/{}'.format(comic_id)})
+            cid_page = requestSession.get('http://ac.qq.com/ComicView/index/id/{0}/cid/{1}'.format(comic_id, cid),timeout=2).text
+            base64data = re.findall(r"DATA\s*=\s*'(.+?)'", cid_page)[0][1:]
+            img_detail_json = json.loads(__decode_base64_data(base64data))
+            imgList = []
+            for img_url in img_detail_json.get('picture'):
+                imgList.append(img_url['url'])
+            return imgList
+            break
+        except (KeyboardInterrupt, SystemExit):
+            print('\n\n中断下载！')
+            raise ErrorCode(3)
+        except:
+            retry_num += 1
+            if retry_num >= retry_max:
+                raise
+            print('下载失败，重试' + str(retry_num) + '次')
+            sleep(2)
+
+    return []
 
 def __decode_base64_data(base64data):
     base64DecodeChars = [- 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1]
@@ -176,7 +192,7 @@ def __download_one_img(imgUrl,imgPath, callback):
     retry_max = 2
     while True:
       try:
-          downloadRequest = requestSession.get(imgUrl, stream=True)
+          downloadRequest = requestSession.get(imgUrl, stream=True, timeout=2)
           with open(imgPath, 'wb') as f:
               for chunk in downloadRequest.iter_content(chunk_size=1024): 
                   if chunk: # filter out keep-alive new chunks
@@ -251,6 +267,19 @@ def main(url, path, lst=None, one_folder=False):
         if not os.path.isdir(comicPath):
             os.makedirs(comicPath)
         print()
+
+        listpath = comicPath + '/list.txt'
+        listfile = open(listpath,'w')
+        listfile.write('漫画名: {}'.format(comicName) + '\n')
+        listfile.write('简介: {}'.format(comicIntrd) + '\n')
+        listfile.write('章节数: {}'.format(count) + '\n')
+        listfile.write('章节列表:' + '\n')
+        try:
+            listfile.write('\n'.join(contentNameList))
+        except Exception:
+            listfile.write('章节列表包含无法解析的特殊字符\n')
+
+        listfile.close()
         
         if not lst:
             contentRange = range(1, len(contentList) + 1)
