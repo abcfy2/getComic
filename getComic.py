@@ -3,14 +3,14 @@
 
 '''***本代码仅供学习交流使用，严禁用于非法用途，各种PR都欢迎***'''
 
-import requests
-import re
+import argparse
 import json
 import os
-import sys
-import argparse
+import re
 import threading
 from time import sleep
+
+import requests
 
 requestSession = requests.session()
 UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
@@ -18,16 +18,19 @@ UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
       Chrome/52.0.2743.82 Safari/537.36'  # Chrome on win10
 requestSession.headers.update({'User-Agent': UA})
 
+
 class ErrorCode(Exception):
     '''自定义错误码:
         1: URL不正确
         2: URL无法跳转为移动端URL
         3: 中断下载'''
+
     def __init__(self, code):
         self.code = code
 
     def __str__(self):
         return repr(self.code)
+
 
 def isLegelUrl(url):
     legal_url_list = [
@@ -42,13 +45,14 @@ def isLegelUrl(url):
             return True
     return False
 
+
 def getId(url):
     if not isLegelUrl(url):
         print('请输入正确的url！具体支持的url请在命令行输入-h|--help参数查看帮助文档。')
         raise ErrorCode(1)
 
     numRE = re.compile(r'\d+$')
-    
+
     id = numRE.findall(url)
     if not id:
         get_id_request = requestSession.get(url)
@@ -56,12 +60,13 @@ def getId(url):
         id = numRE.findall(url)
         if not isLegelUrl(url) or not id:
             print('无法自动跳转移动端URL，请进入http://m.ac.qq.com，找到'
-            '该漫画地址。\n'
-            '地址应该像这样: '
-            'http://m.ac.qq.com/Comic/comicInfo/id/xxxxx (xxxxx为整数)')
+                  '该漫画地址。\n'
+                  '地址应该像这样: '
+                  'http://m.ac.qq.com/Comic/comicInfo/id/xxxxx (xxxxx为整数)')
             raise ErrorCode(2)
 
     return id[0]
+
 
 def getContent(id):
     getComicInfoUrl = 'http://m.ac.qq.com/GetData/getComicInfo?id={}'.format(id)
@@ -84,6 +89,7 @@ def getContent(id):
                 break
     return (comicName, comicIntrd, count, sortedContentList)
 
+
 def getImgList(contentJson, comic_id):
     retry_num = 0
     retry_max = 5
@@ -91,7 +97,8 @@ def getImgList(contentJson, comic_id):
         try:
             cid = list(contentJson.keys())[0]
             requestSession.headers.update({'Referer': 'http://ac.qq.com/Comic/comicInfo/id/{}'.format(comic_id)})
-            cid_page = requestSession.get('http://ac.qq.com/ComicView/index/id/{0}/cid/{1}'.format(comic_id, cid),timeout=2).text
+            cid_page = requestSession.get('http://ac.qq.com/ComicView/index/id/{0}/cid/{1}'.format(comic_id, cid),
+                                          timeout=2).text
             base64data = re.findall(r"DATA\s*=\s*'(.+?)'", cid_page)[0][1:]
             img_detail_json = json.loads(__decode_base64_data(base64data))
             imgList = []
@@ -111,8 +118,14 @@ def getImgList(contentJson, comic_id):
 
     return []
 
+
 def __decode_base64_data(base64data):
-    base64DecodeChars = [- 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1, 63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, -1, -1, -1, -1, -1]
+    base64DecodeChars = [- 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
+                         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1,
+                         63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7,
+                         8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1,
+                         26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
+                         50, 51, -1, -1, -1, -1, -1]
     data_length = len(base64data)
     i = 0
     out = ""
@@ -161,13 +174,13 @@ def downloadImg(imgUrlList, contentPath, one_folder=False):
     print('该集漫画共计{}张图片'.format(count))
     i = 1
     downloaded_num = 0
-    
+
     def __download_callback():
         nonlocal downloaded_num
         nonlocal count
         downloaded_num += 1
         print('\r{}/{}... '.format(downloaded_num, count), end='')
-        
+
     download_threads = []
     for imgUrl in imgUrlList:
         if not one_folder:
@@ -175,42 +188,44 @@ def downloadImg(imgUrlList, contentPath, one_folder=False):
         else:
             imgPath = contentPath + '{0:0>3}.jpg'.format(i)
         i += 1
-        
-        #目标文件存在就跳过下载
+
+        # 目标文件存在就跳过下载
         if os.path.isfile(imgPath):
             count -= 1
             continue
-        download_thread = threading.Thread(target=__download_one_img, 
-            args=(imgUrl,imgPath, __download_callback))
+        download_thread = threading.Thread(target=__download_one_img,
+                                           args=(imgUrl, imgPath, __download_callback))
         download_threads.append(download_thread)
         download_thread.start()
-    [ t.join() for t in download_threads ]
+    [t.join() for t in download_threads]
     print('完毕!\n')
 
-def __download_one_img(imgUrl,imgPath, callback):
+
+def __download_one_img(imgUrl, imgPath, callback):
     retry_num = 0
     retry_max = 2
     while True:
-      try:
-          downloadRequest = requestSession.get(imgUrl, stream=True, timeout=2)
-          with open(imgPath, 'wb') as f:
-              for chunk in downloadRequest.iter_content(chunk_size=1024): 
-                  if chunk: # filter out keep-alive new chunks
-                      f.write(chunk)
-                      f.flush()
-          callback()
-          break
-      except (KeyboardInterrupt, SystemExit):
-          print('\n\n中断下载，删除未下载完的文件！')
-          if os.path.isfile(imgPath):
-              os.remove(imgPath)
-          raise ErrorCode(3)
-      except:
-          retry_num += 1
-          if retry_num >= retry_max:
-              raise
-          print('下载失败，重试' + str(retry_num) + '次')
-          sleep(2)
+        try:
+            downloadRequest = requestSession.get(imgUrl, stream=True, timeout=2)
+            with open(imgPath, 'wb') as f:
+                for chunk in downloadRequest.iter_content(chunk_size=1024):
+                    if chunk:  # filter out keep-alive new chunks
+                        f.write(chunk)
+                        f.flush()
+            callback()
+            break
+        except (KeyboardInterrupt, SystemExit):
+            print('\n\n中断下载，删除未下载完的文件！')
+            if os.path.isfile(imgPath):
+                os.remove(imgPath)
+            raise ErrorCode(3)
+        except:
+            retry_num += 1
+            if retry_num >= retry_max:
+                raise
+            print('下载失败，重试' + str(retry_num) + '次')
+            sleep(2)
+
 
 def parseLIST(lst):
     '''解析命令行中的-l|--list参数，返回解析后的章节列表'''
@@ -218,36 +233,37 @@ def parseLIST(lst):
     if not legalListRE.match(lst):
         raise LISTFormatError(lst + ' 不匹配正则: ' + r'^\d+([,-]\d+)*$')
 
-    #先逗号分割字符串，分割后的字符串再用短横杠分割
+    # 先逗号分割字符串，分割后的字符串再用短横杠分割
     parsedLIST = []
     sublist = lst.split(',')
     numRE = re.compile(r'^\d+$')
 
     for sub in sublist:
         if numRE.match(sub):
-            if int(sub) > 0: #自动忽略掉数字0
+            if int(sub) > 0:  # 自动忽略掉数字0
                 parsedLIST.append(int(sub))
             else:
                 print('警告: 参数中包括不存在的章节0，自动忽略')
         else:
             splitnum = list(map(int, sub.split('-')))
             maxnum = max(splitnum)
-            minnum = min(splitnum)       #min-max或max-min都支持
+            minnum = min(splitnum)  # min-max或max-min都支持
             if minnum == 0:
-                minnum = 1               #忽略数字0
+                minnum = 1  # 忽略数字0
                 print('警告: 参数中包括不存在的章节0，自动忽略')
-            parsedLIST.extend(range(minnum, maxnum+1))
+            parsedLIST.extend(range(minnum, maxnum + 1))
 
-    parsedLIST = sorted(set(parsedLIST)) #按照从小到大的顺序排序并去重
+    parsedLIST = sorted(set(parsedLIST))  # 按照从小到大的顺序排序并去重
     return parsedLIST
+
 
 def main(url, path, lst=None, one_folder=False):
     '''url: 要爬取的漫画首页。 path: 漫画下载路径。 lst: 要下载的章节列表(-l|--list后面的参数)'''
     try:
         if not os.path.isdir(path):
-           os.makedirs(path)
+            os.makedirs(path)
         id = getId(url)
-        comicName,comicIntrd,count,contentList = getContent(id)
+        comicName, comicIntrd, count, contentList = getContent(id)
         contentNameList = []
         for item in contentList:
             for k in item:
@@ -260,16 +276,16 @@ def main(url, path, lst=None, one_folder=False):
             print('\n'.join(contentNameList))
         except Exception:
             print('章节列表包含无法解析的特殊字符\n')
-            
-        forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
-        comicName = re.sub(forbiddenRE, '_', comicName) #将windows下的非法字符一律替换为_
+
+        forbiddenRE = re.compile(r'[\\/":*?<>|]')  # windows下文件名非法字符\ / : * ? " < > |
+        comicName = re.sub(forbiddenRE, '_', comicName)  # 将windows下的非法字符一律替换为_
         comicPath = os.path.join(path, comicName)
         if not os.path.isdir(comicPath):
             os.makedirs(comicPath)
         print()
 
         listpath = comicPath + '/list.txt'
-        listfile = open(listpath,'w')
+        listfile = open(listpath, 'w')
         listfile.write('漫画名: {}'.format(comicName) + '\n')
         listfile.write('简介: {}'.format(comicIntrd) + '\n')
         listfile.write('章节数: {}'.format(count) + '\n')
@@ -280,7 +296,7 @@ def main(url, path, lst=None, one_folder=False):
             listfile.write('章节列表包含无法解析的特殊字符\n')
 
         listfile.close()
-        
+
         if not lst:
             contentRange = range(1, len(contentList) + 1)
         else:
@@ -289,15 +305,15 @@ def main(url, path, lst=None, one_folder=False):
         for i in contentRange:
             if i > len(contentList):
                 print('警告: 章节总数 {} ,'
-                        '参数中包含过大数值,'
-                        '自动忽略'.format(len(contentList)))
+                      '参数中包含过大数值,'
+                      '自动忽略'.format(len(contentList)))
                 break
 
-            contentNameList[i - 1] = re.sub(forbiddenRE, '_', contentNameList[i - 1]) #将windows下的非法字符一律替换为_
+            contentNameList[i - 1] = re.sub(forbiddenRE, '_', contentNameList[i - 1])  # 将windows下的非法字符一律替换为_
             contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i, contentNameList[i - 1]))
 
             try:
-                print('正在下载第{0:0>4}话: {1}'.format(i, contentNameList[i -1]))
+                print('正在下载第{0:0>4}话: {1}'.format(i, contentNameList[i - 1]))
             except Exception:
                 print('正在下载第{0:0>4}话: {1}'.format(i))
 
@@ -310,19 +326,20 @@ def main(url, path, lst=None, one_folder=False):
 
     except ErrorCode as e:
         exit(e.code)
-    
+
+
 if __name__ == '__main__':
     defaultPath = os.path.join(os.path.expanduser('~'), 'tencent_comic')
 
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                      description='*下载腾讯漫画，仅供学习交流，请勿用于非法用途*\n'
-                                     '空参运行进入交互式模式运行。')
+                                                 '空参运行进入交互式模式运行。')
     parser.add_argument('-u', '--url', help='要下载的漫画的首页，可以下载以下类型的url: \n'
-            'http://ac.qq.com/Comic/comicInfo/id/511915\n'
-            'http://m.ac.qq.com/comic/index/id/505430\n'
-            'http://ac.qq.com/naruto')
-    parser.add_argument('-p', '--path', help='漫画下载路径。 默认: {}'.format(defaultPath), 
-                default=defaultPath)
+                                            'http://ac.qq.com/Comic/comicInfo/id/511915\n'
+                                            'http://m.ac.qq.com/comic/index/id/505430\n'
+                                            'http://ac.qq.com/naruto')
+    parser.add_argument('-p', '--path', help='漫画下载路径。 默认: {}'.format(defaultPath),
+                        default=defaultPath)
     parser.add_argument('-d', '--dir', action='store_true', help='将所有图片下载到一个目录(适合腾讯漫画等软件连看使用)')
     parser.add_argument('-l', '--list', help=("要下载的漫画章节列表，不指定则下载所有章节。格式范例: \n"
                                               "N - 下载具体某一章节，如-l 1, 下载第1章\n"

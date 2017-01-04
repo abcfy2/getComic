@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
-import getComic
 import os
 import re
 import sys
+
+from PyQt5.QtCore import *
+from PyQt5.QtWidgets import *
+
+import getComic
+
 
 class TencentComicDownloader(QWidget):
     def __init__(self, parent=None):
@@ -24,20 +26,20 @@ class TencentComicDownloader(QWidget):
         self.pathLine = QLineEdit()
         defaultPath = os.path.join(os.path.expanduser('~'), 'tencent_comic')
         self.pathLine.setText(defaultPath)
-        
+
         self.browseButton = QPushButton("浏览")
         self.browseButton.clicked.connect(self.getPath)
 
         comicNameLabel = QLabel("漫画名: ")
         self.comicNameLabel = QLabel("暂无")
         self.one_folder_checkbox = QCheckBox("单目录")
-        
+
         comicIntroLabel = QLabel("简介: ")
         self.comicIntro = QLabel("暂无")
         self.comicIntro.setWordWrap(True)
 
         chapterGroupBox = QGroupBox("章节列表: (按住CTRL点击可不连续选中,鼠标拖拽或按住SHIFT点击首尾可连续选中,CTRL+A全选)")
-        
+
         self.chapterListView = QListWidget(chapterGroupBox)
         self.chapterListView.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.chapterListView.setEnabled(False)
@@ -77,13 +79,13 @@ class TencentComicDownloader(QWidget):
 
     def enableWidget(self, enable):
         widgets_list = [
-                self.downloadButton,
-                self.nameLine,
-                self.pathLine,
-                self.chapterListView,
-                self.analysisButton,
-                self.browseButton,
-                self.one_folder_checkbox
+            self.downloadButton,
+            self.nameLine,
+            self.pathLine,
+            self.chapterListView,
+            self.analysisButton,
+            self.browseButton,
+            self.one_folder_checkbox
         ]
         for widget in widgets_list:
             widget.setEnabled(enable)
@@ -109,13 +111,13 @@ class TencentComicDownloader(QWidget):
         try:
             if getComic.isLegelUrl(url):
                 self.id = getComic.getId(url)
-                self.comicName,self.comicIntrd,self.count,self.contentList = getComic.getContent(self.id)
+                self.comicName, self.comicIntrd, self.count, self.contentList = getComic.getContent(self.id)
 
                 self.contentNameList = []
                 for item in self.contentList:
                     for k in item:
                         self.contentNameList.append(item[k]['t'])
-                
+
                 self.comicNameLabel.setText(self.comicName)
                 self.comicIntro.setText(self.comicIntrd)
                 self.chapterListView.setEnabled(True)
@@ -124,7 +126,7 @@ class TencentComicDownloader(QWidget):
                 self.statusLabel.setText('选择要下载的章节后点击右侧按钮')
 
                 for i in range(len(self.contentNameList)):
-                    self.chapterListView.addItem('第{0:0>4}话-{1}'.format(i+1, self.contentNameList[i]))
+                    self.chapterListView.addItem('第{0:0>4}话-{1}'.format(i + 1, self.contentNameList[i]))
                     self.chapterListView.item(i).setSelected(True)
 
                 self.downloadButton.setEnabled(True)
@@ -145,22 +147,24 @@ class TencentComicDownloader(QWidget):
 
         self.enableWidget(False)
 
-        selectedChapterList = [ item.row() for item in self.chapterListView.selectedIndexes() ]
+        selectedChapterList = [item.row() for item in self.chapterListView.selectedIndexes()]
 
         path = self.pathLine.text()
         comicName = self.comicName
-        forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
-        comicName = re.sub(forbiddenRE, '_', comicName) #将windows下的非法字符一律替换为_
+        forbiddenRE = re.compile(r'[\\/":*?<>|]')  # windows下文件名非法字符\ / : * ? " < > |
+        comicName = re.sub(forbiddenRE, '_', comicName)  # 将windows下的非法字符一律替换为_
         comicPath = os.path.join(path, comicName)
 
         if not os.path.isdir(comicPath):
             os.makedirs(comicPath)
 
-        self.downloadThread = Downloader(selectedChapterList, comicPath, self.contentList, self.contentNameList, self.id, one_folder)
+        self.downloadThread = Downloader(selectedChapterList, comicPath, self.contentList, self.contentNameList,
+                                         self.id, one_folder)
         self.downloadThread.output.connect(self.setStatus)
         self.downloadThread.finished.connect(lambda: self.enableWidget(True))
         self.downloadThread.start()
-        
+
+
 class Downloader(QThread):
     output = pyqtSignal(['QString'])
     finished = pyqtSignal()
@@ -178,27 +182,28 @@ class Downloader(QThread):
     def run(self):
         try:
             for i in self.selectedChapterList:
-                outputString = '正在下载第{0:0>4}话: {1}...'.format(i+1, self.contentNameList[i])
+                outputString = '正在下载第{0:0>4}话: {1}...'.format(i + 1, self.contentNameList[i])
                 print(outputString)
                 self.output.emit(outputString)
-                forbiddenRE = re.compile(r'[\\/":*?<>|]') #windows下文件名非法字符\ / : * ? " < > |
+                forbiddenRE = re.compile(r'[\\/":*?<>|]')  # windows下文件名非法字符\ / : * ? " < > |
                 self.contentNameList[i] = re.sub(forbiddenRE, '_', self.contentNameList[i])
-                contentPath = os.path.join(self.comicPath, '第{0:0>4}话-{1}'.format(i+1, self.contentNameList[i]))
+                contentPath = os.path.join(self.comicPath, '第{0:0>4}话-{1}'.format(i + 1, self.contentNameList[i]))
                 if not self.one_folder:
                     if not os.path.isdir(contentPath):
                         os.mkdir(contentPath)
                 imgList = getComic.getImgList(self.contentList[i], self.id)
                 getComic.downloadImg(imgList, contentPath, self.one_folder)
-                
+
                 self.output.emit('完毕!')
-       
+
         except Exception as e:
             self.output.emit('<font color="red">{}</font>\n'
-                    '遇到异常!请尝试重新点击下载按钮重试'.format(e))
+                             '遇到异常!请尝试重新点击下载按钮重试'.format(e))
             raise
 
         finally:
             self.finished.emit()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
