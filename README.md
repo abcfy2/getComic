@@ -11,7 +11,7 @@ getComic
 
 > **注意**: pyqt5新版本依赖于[Visual C++ Redistributable for Visual Studio 2015(64bit)](https://www.microsoft.com/zh-cn/download/confirmation.aspx?id=48145)，如果运行报错请安装此运行库
 
-使用[cx\_freeze](http://cx-freeze.sourceforge.net/)打包
+使用[Pyinstaller](http://www.pyinstaller.org/)打包
 
 **依赖**:
 
