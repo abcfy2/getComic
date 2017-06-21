@@ -75,7 +75,7 @@ def getContent(id):
     getComicInfo = requestSession.get(getComicInfoUrl)
     comicInfoJson = getComicInfo.text
     comicInfo = json.loads(comicInfoJson)
-    comicName = comicInfo['title']
+    comicName = comicInfo['title'].strip()
     comicIntrd = comicInfo['brief_intrd']
     getChapterListUrl = 'http://m.ac.qq.com/GetData/getChapterList?id={}'.format(id)
     getChapterList = requestSession.get(getChapterListUrl)
@@ -309,7 +309,7 @@ def main(url, path, lst=None, one_folder=False):
                       '自动忽略'.format(len(contentList)))
                 break
 
-            contentNameList[i - 1] = re.sub(forbiddenRE, '_', contentNameList[i - 1])  # 将windows下的非法字符一律替换为_
+            contentNameList[i - 1] = re.sub(forbiddenRE, '_', contentNameList[i - 1]).strip()  # 将windows下的非法字符一律替换为_
             contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i, contentNameList[i - 1]))
 
             try:

@@ -186,7 +186,7 @@ class Downloader(QThread):
                 print(outputString)
                 self.output.emit(outputString)
                 forbiddenRE = re.compile(r'[\\/":*?<>|]')  # windows下文件名非法字符\ / : * ? " < > |
-                self.contentNameList[i] = re.sub(forbiddenRE, '_', self.contentNameList[i])
+                self.contentNameList[i] = re.sub(forbiddenRE, '_', self.contentNameList[i]).strip()
                 contentPath = os.path.join(self.comicPath, '第{0:0>4}话-{1}'.format(i + 1, self.contentNameList[i]))
                 if not self.one_folder:
                     if not os.path.isdir(contentPath):
