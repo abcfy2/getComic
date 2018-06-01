@@ -15,11 +15,12 @@ getComic
 
 * python3
 * 第三方类库[requests](http://docs.python-requests.org/en/latest/user/install/#install)
+* 第三方额类库[lxml](http://lxml.de/)
 * [python3-pyqt5](http://www.riverbankcomputing.co.uk/software/pyqt/download5) (GUI依赖，不用GUI可不装)
 
 ubuntu系列系统使用以下命令安装依赖：
 
-    sudo apt-get update ; sudo apt-get install python3 python3-requests
+    sudo apt-get update ; sudo apt-get install python3 python3-requests python3-lxml
     sudo apt-get install python3-pyqt5 #GUI依赖，不用GUI可不装
 
 URL格式: 漫画首页的URL，如``http://m.ac.qq.com/comic/index/id/518333``(移动版) 或 ``http://ac.qq.com/Comic/comicInfo/id/17114``, ``http://ac.qq.com/naruto``(PC版)

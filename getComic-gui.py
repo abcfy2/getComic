@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+import traceback
 
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -115,8 +116,7 @@ class TencentComicDownloader(QWidget):
 
                 self.contentNameList = []
                 for item in self.contentList:
-                    for k in item:
-                        self.contentNameList.append(item[k]['t'])
+                    self.contentNameList.append(item['name'])
 
                 self.comicNameLabel.setText(self.comicName)
                 self.comicIntro.setText(self.comicIntrd)
@@ -140,6 +140,7 @@ class TencentComicDownloader(QWidget):
             self.statusLabel.setText('<font color="red">不存在的地址</font>')
         except Exception as e:
             self.statusLabel.setText('<font color="red">{}</font>'.format(e))
+            traceback.print_exc()
 
     def download(self):
         self.downloadButton.setText("下载中...")
@@ -191,7 +192,7 @@ class Downloader(QThread):
                 if not self.one_folder:
                     if not os.path.isdir(contentPath):
                         os.mkdir(contentPath)
-                imgList = getComic.getImgList(self.contentList[i], self.id)
+                imgList = getComic.getImgList(self.contentList[i - 1]['url'])
                 getComic.downloadImg(imgList, contentPath, self.one_folder)
 
                 self.output.emit('完毕!')
