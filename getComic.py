@@ -90,8 +90,6 @@ def getContent(id):
         sortedContentList.append(
             {'name': chapter_element.text, 'url': 'https://m.ac.qq.com' + chapter_element.get('href')})
 
-    print(sortedContentList)
-
     return (comicName, comicIntrd, count, sortedContentList)
 
 
