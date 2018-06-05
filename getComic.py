@@ -4,6 +4,7 @@
 '''***本代码仅供学习交流使用，严禁用于非法用途，各种PR都欢迎***'''
 
 import argparse
+import base64
 import json
 import os
 import re
@@ -70,25 +71,21 @@ def getId(url):
 
 
 def getContent(id):
-    comic_info_page = 'https://m.ac.qq.com/comic/index/id/{}'.format(id)
+    comic_info_page = 'http://ac.qq.com/Comic/comicInfo/id/{}'.format(id)
     page = requestSession.get(comic_info_page).text
     tree = html.fromstring(page)
-    comic_name_xpath = '/html/body/article/div[1]/section[1]/div[2]/div[2]/ul/li[1]/h1/text()'
+    comic_name_xpath = '//*[@id="special_bg"]/div[3]/div[1]/div[1]/div[2]/div[1]/div[1]/h2/strong/text()'
     comicName = tree.xpath(comic_name_xpath)[0].strip()
-    comic_intro_xpath = '/html/body/article/div[2]/section[1]/div/p/text()'
+    comic_intro_xpath = '//*[@id="special_bg"]/div[3]/div[1]/div[1]/div[2]/div[1]/p[2]/text()'
     comicIntrd = tree.xpath(comic_intro_xpath)[0].strip()
-
-    chapter_list_page = 'https://m.ac.qq.com/comic/chapterList/id/{}'.format(id)
-    page = requestSession.get(chapter_list_page).text
-    tree = html.fromstring(page)
-    chapter_list_xpath = '/html/body/section[2]/ul[2]/li/a'
+    chapter_list_xpath = '//*[@id="chapter"]/div[2]/ol[1]/li/p/span/a'
     chapter_list = tree.xpath(chapter_list_xpath)
     count = len(chapter_list)
     sortedContentList = []
 
     for chapter_element in chapter_list:
         sortedContentList.append(
-            {'name': chapter_element.text, 'url': 'https://m.ac.qq.com' + chapter_element.get('href')})
+            {'name': chapter_element.text.strip(), 'url': 'http://ac.qq.com' + chapter_element.get('href')})
 
     return (comicName, comicIntrd, count, sortedContentList)
 
@@ -99,8 +96,8 @@ def getImgList(chapter_url):
     while True:
         try:
             chapter_page = requestSession.get(chapter_url, timeout=5).text
-            base64data = re.findall(r"data:\s*'(.+?)'", chapter_page)[0][1:]
-            img_detail_json = json.loads(__decode_base64_data(base64data))
+            base64data = re.findall(r"DATA\s*=\s*'(.+?)'", chapter_page)[0][1:]
+            img_detail_json = json.loads(base64.b64decode(base64data))
             imgList = []
             for img_url in img_detail_json.get('picture'):
                 imgList.append(img_url['url'])
@@ -117,56 +114,6 @@ def getImgList(chapter_url):
             sleep(2)
 
     return []
-
-
-def __decode_base64_data(base64data):
-    base64DecodeChars = [- 1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
-                         -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, -1, -1, -1,
-                         63, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, -1, -1, -1, -1, -1, -1, -1, 0, 1, 2, 3, 4, 5, 6, 7,
-                         8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, -1, -1, -1, -1, -1, -1,
-                         26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49,
-                         50, 51, -1, -1, -1, -1, -1]
-    data_length = len(base64data)
-    i = 0
-    out = ""
-    c1 = c2 = c3 = c4 = 0
-    while i < data_length:
-        while True:
-            c1 = base64DecodeChars[ord(base64data[i]) & 255]
-            i += 1
-            if not (i < data_length and c1 == -1):
-                break
-        if c1 == -1:
-            break
-        while True:
-            c2 = base64DecodeChars[ord(base64data[i]) & 255]
-            i += 1
-            if not (i < data_length and c2 == -1):
-                break
-        if c2 == -1:
-            break
-        out += chr(c1 << 2 | (c2 & 48) >> 4)
-        while True:
-            c3 = ord(base64data[i]) & 255
-            i += 1
-            if c3 == 61:
-                return out
-            c3 = base64DecodeChars[c3]
-            if not (i < data_length and c3 == - 1):
-                break
-        if c3 == -1:
-            break
-        out += chr((c2 & 15) << 4 | (c3 & 60) >> 2)
-        while True:
-            c4 = ord(base64data[i]) & 255
-            i += 1
-            if c4 == 61:
-                return out
-            c4 = base64DecodeChars[c4]
-            if not (i < data_length and c4 == - 1):
-                break
-        out += chr((c3 & 3) << 6 | c4)
-    return out
 
 
 def downloadImg(imgUrlList, contentPath, one_folder=False):

@@ -192,7 +192,7 @@ class Downloader(QThread):
                 if not self.one_folder:
                     if not os.path.isdir(contentPath):
                         os.mkdir(contentPath)
-                imgList = getComic.getImgList(self.contentList[i - 1]['url'])
+                imgList = getComic.getImgList(self.contentList[i]['url'])
                 getComic.downloadImg(imgList, contentPath, self.one_folder)
 
                 self.output.emit('完毕!')
