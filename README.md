@@ -15,7 +15,7 @@ getComic
 
 * python3
 * 第三方类库[requests](http://docs.python-requests.org/en/latest/user/install/#install)
-* 第三方额类库[lxml](http://lxml.de/)
+* 第三方类库[lxml](http://lxml.de/)
 * [python3-pyqt5](http://www.riverbankcomputing.co.uk/software/pyqt/download5) (GUI依赖，不用GUI可不装)
 
 ubuntu系列系统使用以下命令安装依赖：
