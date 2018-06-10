@@ -97,7 +97,7 @@ def getImgList(chapter_url):
         try:
             chapter_page = requestSession.get(chapter_url, timeout=5).text
             base64data = re.findall(r"DATA\s*=\s*'(.+?)'", chapter_page)[0][1:]
-            img_detail_json = json.loads(base64.b64decode(base64data))
+            img_detail_json = json.loads(base64.b64decode(base64data).decode('utf-8'))
             imgList = []
             for img_url in img_detail_json.get('picture'):
                 imgList.append(img_url['url'])
