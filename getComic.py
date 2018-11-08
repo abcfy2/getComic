@@ -36,10 +36,10 @@ class ErrorCode(Exception):
 
 def isLegelUrl(url):
     legal_url_list = [
-        re.compile(r'^http://ac.qq.com/Comic/[Cc]omicInfo/id/\d+?'),
-        re.compile(r'^http://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+?'),
-        re.compile(r'^http://m.ac.qq.com/comic/index/id/\d+?'),
-        re.compile(r'^http://ac.qq.com/\w+/?$'),
+        re.compile(r'^https?://ac.qq.com/Comic/[Cc]omicInfo/id/\d+?'),
+        re.compile(r'^https?://m.ac.qq.com/Comic/[Cc]omicInfo/id/\d+?'),
+        re.compile(r'^https?://m.ac.qq.com/comic/index/id/\d+?'),
+        re.compile(r'^https?://ac.qq.com/\w+/?$'),
     ]
 
     for legal_url in legal_url_list:
@@ -96,13 +96,13 @@ def getImgList(chapter_url):
     while True:
         try:
             chapter_page = requestSession.get(chapter_url, timeout=5).text
-            base64data = re.findall(r"DATA\s*=\s*'(.+?)'", chapter_page)[0][1:]
-            img_detail_json = json.loads(base64.b64decode(base64data).decode('utf-8'))
+            data = re.findall(r"DATA\s*=\s*'(.+?)'", chapter_page)[0]
+            nonce = re.findall(r"nonce\s*=\s*'(.+?)'", chapter_page)[0]
+            img_detail_json = __decode_data(data, nonce)
             imgList = []
             for img_url in img_detail_json.get('picture'):
                 imgList.append(img_url['url'])
             return imgList
-            break
         except (KeyboardInterrupt, SystemExit):
             print('\n\n中断下载！')
             raise ErrorCode(3)
@@ -146,6 +146,21 @@ def downloadImg(imgUrlList, contentPath, one_folder=False):
         download_thread.start()
     [t.join() for t in download_threads]
     print('完毕!\n')
+
+
+def __decode_data(data, nonce):
+    t = list(data)
+    n = re.findall(r'(\d+)([a-zA-Z]+)', nonce)
+    n_len = len(n)
+    index = n_len - 1
+    while index >= 0:
+        locate = int(n[index][0]) & 255
+        del t[locate:locate + len(n[index][1])]
+        index = index - 1
+
+    base64_str = ''.join(t)
+    json_str = base64.b64decode(base64_str).decode('utf-8')
+    return json.loads(json_str)
 
 
 def __download_one_img(imgUrl, imgPath, callback):
@@ -223,7 +238,8 @@ def main(url, path, lst=None, one_folder=False):
         except Exception:
             print('章节列表包含无法解析的特殊字符\n')
 
-        forbiddenRE = re.compile(r'[\\/":*?<>|]')  # windows下文件名非法字符\ / : * ? " < > |
+        # windows下文件名非法字符\ / : * ? " < > |
+        forbiddenRE = re.compile(r'[\\/":*?<>|]')
         comicName = re.sub(forbiddenRE, '_', comicName)  # 将windows下的非法字符一律替换为_
         comicPath = os.path.join(path, comicName)
         if not os.path.isdir(comicPath):
@@ -286,7 +302,8 @@ if __name__ == '__main__':
                                             'http://ac.qq.com/naruto')
     parser.add_argument('-p', '--path', help='漫画下载路径。 默认: {}'.format(defaultPath),
                         default=defaultPath)
-    parser.add_argument('-d', '--dir', action='store_true', help='将所有图片下载到一个目录(适合腾讯漫画等软件连看使用)')
+    parser.add_argument('-d', '--dir', action='store_true',
+                        help='将所有图片下载到一个目录(适合腾讯漫画等软件连看使用)')
     parser.add_argument('-l', '--list', help=("要下载的漫画章节列表，不指定则下载所有章节。格式范例: \n"
                                               "N - 下载具体某一章节，如-l 1, 下载第1章\n"
                                               'N,N... - 下载某几个不连续的章节，如 "-l 1,3,5", 下载1,3,5章\n'
