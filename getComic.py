@@ -15,9 +15,8 @@ import requests
 from lxml import html
 
 requestSession = requests.session()
-UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) \
-      AppleWebKit/537.36 (KHTML, like Gecko) \
-      Chrome/52.0.2743.82 Safari/537.36'  # Chrome on win10
+# Chrome on win10
+UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/70.0.3538.102 Safari/537.36'
 requestSession.headers.update({'User-Agent': UA})
 
 
@@ -96,8 +95,13 @@ def getImgList(chapter_url):
     while True:
         try:
             chapter_page = requestSession.get(chapter_url, timeout=5).text
-            data = re.findall(r"DATA\s*=\s*'(.+?)'", chapter_page)[0]
-            nonce = re.findall(r"nonce\s*=\s*'(.+?)'", chapter_page)[0]
+            tmp_page = re.sub(r'["\'\+\s]', '', chapter_page)
+            data = re.findall(r"DATA=(.+?),", tmp_page)[0]
+            nonce = re.findall(r"nonce=(.+?);", tmp_page)[0]
+            nonce_replace = re.findall(r"window\[nonce\]=(.+?);", tmp_page)
+            if nonce_replace:
+                nonce = nonce_replace[0]
+
             img_detail_json = __decode_data(data, nonce)
             imgList = []
             for img_url in img_detail_json.get('picture'):
@@ -168,7 +172,8 @@ def __download_one_img(imgUrl, imgPath, callback):
     retry_max = 2
     while True:
         try:
-            downloadRequest = requestSession.get(imgUrl, stream=True, timeout=2)
+            downloadRequest = requestSession.get(
+                imgUrl, stream=True, timeout=2)
             with open(imgPath, 'wb') as f:
                 for chunk in downloadRequest.iter_content(chunk_size=1024):
                     if chunk:  # filter out keep-alive new chunks
@@ -247,7 +252,7 @@ def main(url, path, lst=None, one_folder=False):
         print()
 
         listpath = comicPath + '/list.txt'
-        listfile = open(listpath, 'w')
+        listfile = open(listpath, mode='w', errors='replace')
         listfile.write('漫画名: {}'.format(comicName) + '\n')
         listfile.write('简介: {}'.format(comicIntrd) + '\n')
         listfile.write('章节数: {}'.format(count) + '\n')
@@ -271,8 +276,11 @@ def main(url, path, lst=None, one_folder=False):
                       '自动忽略'.format(len(contentList)))
                 break
 
-            contentNameList[i - 1] = re.sub(forbiddenRE, '_', contentNameList[i - 1]).strip()  # 将windows下的非法字符一律替换为_
-            contentPath = os.path.join(comicPath, '第{0:0>4}话-{1}'.format(i, contentNameList[i - 1]))
+            # 将windows下的非法字符一律替换为_
+            contentNameList[i - 1] = re.sub(forbiddenRE,
+                                            '_', contentNameList[i - 1]).strip()
+            contentPath = os.path.join(
+                comicPath, '第{0:0>4}话-{1}'.format(i, contentNameList[i - 1]))
 
             try:
                 print('正在下载第{0:0>4}话: {1}'.format(i, contentNameList[i - 1]))
