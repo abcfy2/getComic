@@ -94,18 +94,14 @@ def getImgList(chapter_url):
     retry_max = 5
     while True:
         try:
+            chapter_url = re.sub('ac.qq.com/ComicView', 'm.ac.qq.com/chapter', chapter_url, re.I)
             chapter_page = requestSession.get(chapter_url, timeout=5).text
-            tmp_page = re.sub(r'["\'\+\s]', '', chapter_page)
-            data = re.findall(r"DATA=(.+?),", tmp_page)[0]
-            nonce = re.findall(r"nonce=(.+?);", tmp_page)[0]
-            nonce_replace = re.findall(r"window\[nonce\]=(.+?);", tmp_page)
-            if nonce_replace:
-                nonce = nonce_replace[0]
-
+            data = re.findall(r"data:\s*'(.+?)',", chapter_page)[0]
+            nonce = re.findall(r'data-mpmvr="(.+?)"', chapter_page)[0]
             img_detail_json = __decode_data(data, nonce)
             imgList = []
             for img_url in img_detail_json.get('picture'):
-                imgList.append(img_url['url'])
+                imgList.append(re.sub(r'/\d+$', '/0', img_url['url']))
             return imgList
         except (KeyboardInterrupt, SystemExit):
             print('\n\n中断下载！')
