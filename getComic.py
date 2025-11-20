@@ -73,18 +73,88 @@ def getContent(id):
     comic_info_page = 'http://ac.qq.com/Comic/comicInfo/id/{}'.format(id)
     page = requestSession.get(comic_info_page).text
     tree = html.fromstring(page)
-    comic_name_xpath = '//*[@id="special_bg"]/div[3]/div[1]/div[1]/div[2]/div[1]/div[1]/h2/strong/text()'
-    comicName = tree.xpath(comic_name_xpath)[0].strip()
-    comic_intro_xpath = '//*[@id="special_bg"]/div[3]/div[1]/div[1]/div[2]/div[1]/p[2]/text()'
-    comicIntrd = tree.xpath(comic_intro_xpath)[0].strip()
-    chapter_list_xpath = '//*[@id="chapter"]/div[2]/ol[1]/li/p/span/a'
-    chapter_list = tree.xpath(chapter_list_xpath)
+    
+    # 尝试多种可能的漫画名称选择器
+    comic_name_selectors = [
+        '//*[@id="special_bg"]/div[3]/div[1]/div[1]/div[2]/div[1]/div[1]/h2/strong/text()',
+        '//h1[@class="works-intro-title ui-left"]/text()',
+        '//h1[@class="detail-main-title"]/text()',
+        '//title/text()',
+        '//div[@class="works-intro"]/h2/text()',
+        '//div[@class="detail-main-hd"]/h1/text()',
+        '//div[@class="works-title"]/text()',
+        '//h2[@class="works-subtitle"]/text()'
+    ]
+    
+    comicName = ""
+    for selector in comic_name_selectors:
+        try:
+            result = tree.xpath(selector)
+            if result:
+                comicName = result[0].strip()
+                # 从标题中提取漫画名
+                if not comicName and ' - ' in result[0]:
+                    comicName = result[0].split(' - ')[0].strip()
+                elif not comicName and '—' in result[0]:
+                    comicName = result[0].split('—')[0].strip()
+                break
+        except:
+            continue
+    
+    if not comicName:
+        # 如果还是找不到，使用默认名称
+        comicName = "未知漫画_{}".format(id)
+
+    # 尝试多种可能的漫画简介选择器
+    comic_intro_selectors = [
+        '//*[@id="special_bg"]/div[3]/div[1]/div[1]/div[2]/div[1]/p[2]/text()',
+        '//p[@class="works-intro-desc"]/text()',
+        '//div[@class="works-desc"]/p/text()',
+        '//div[@class="detail-desc"]/text()',
+        '//div[@class="works-introduction"]/text()'
+    ]
+    
+    comicIntrd = ""
+    for selector in comic_intro_selectors:
+        try:
+            result = tree.xpath(selector)
+            if result:
+                comicIntrd = result[0].strip()
+                break
+        except:
+            continue
+
+    # 尝试多种可能的章节列表选择器
+    chapter_list_selectors = [
+        '//*[@id="chapter"]/div[2]/ol[1]/li/p/span/a',
+        '//ol[@id="chapter"]//a',
+        '//ul[contains(@class, "chapter-list")]//a',
+        '//div[contains(@class, "chapter")]//a',
+        '//div[contains(@class, "mod_booklist")]//a',
+        '//ul[contains(@class, "list")]//a'
+    ]
+    
+    chapter_list = []
+    for selector in chapter_list_selectors:
+        try:
+            chapter_list = tree.xpath(selector)
+            if chapter_list:
+                break
+        except:
+            continue
+
     count = len(chapter_list)
     sortedContentList = []
 
     for chapter_element in chapter_list:
-        sortedContentList.append(
-            {'name': chapter_element.text.strip(), 'url': 'http://ac.qq.com' + chapter_element.get('href')})
+        href = chapter_element.get('href')
+        if href:
+            if href.startswith('http'):
+                url = href
+            else:
+                url = 'http://ac.qq.com' + href
+            sortedContentList.append(
+                {'name': chapter_element.text.strip() if chapter_element.text else '未知章节', 'url': url})
 
     return (comicName, comicIntrd, count, sortedContentList)
 
@@ -94,8 +164,36 @@ def getImgList(chapter_url):
     retry_max = 5
     while True:
         try:
+            # 尝试使用新的API方式获取图片数据
             chapter_url = re.sub('ac.qq.com/ComicView', 'm.ac.qq.com/chapter', chapter_url, re.I)
-            chapter_page = requestSession.get(chapter_url, timeout=5).text
+            chapter_page = requestSession.get(chapter_url, timeout=10).text
+            
+            # 尝试新的数据获取方式
+            # 方法1: 查找页面中的JSON数据
+            import json as json_module
+            json_match = re.search(r'window\.DATA\s*=\s*({.*?});|window\.data\s*=\s*({.*?});|var\s+DATA\s*=\s*({.*?});', chapter_page)
+            if json_match:
+                json_str = json_match.group(1) or json_match.group(2) or json_match.group(3)
+                try:
+                    data_json = json_module.loads(json_str)
+                    if 'picture' in data_json:
+                        imgList = []
+                        for img_url in data_json.get('picture', []):
+                            if isinstance(img_url, str):
+                                imgList.append(re.sub(r'/\d+$', '/0', img_url))
+                            elif isinstance(img_url, dict) and 'url' in img_url:
+                                imgList.append(re.sub(r'/\d+$', '/0', img_url['url']))
+                        return imgList
+                except:
+                    pass
+            
+            # 方法2: 查找可能的图片URL直接在页面中
+            img_urls = re.findall(r'"url"\s*:\s*"([^"]*manhua[^"]*\.(?:jpg|jpeg|png|gif|webp)[^"]*)"', chapter_page)
+            if img_urls:
+                imgList = [re.sub(r'/\d+$', '/0', url.replace('\\/', '/')) for url in img_urls]
+                return imgList
+            
+            # 方法3: 尝试旧的data和nonce方式
             data = re.findall(r"data:\s*'(.+?)',", chapter_page)[0]
             nonce = re.findall(r'data-mpmvr="(.+?)"', chapter_page)[0]
             img_detail_json = __decode_data(data, nonce)
@@ -106,11 +204,26 @@ def getImgList(chapter_url):
         except (KeyboardInterrupt, SystemExit):
             print('\n\n中断下载！')
             raise ErrorCode(3)
-        except:
+        except IndexError:
+            # 如果旧方式失败，尝试直接从页面解析图片
+            try:
+                # 尝试从页面中直接提取图片URL
+                img_urls = re.findall(r'https?://[^"]*manhua[^"]*\.(?:jpg|jpeg|png|gif|webp)[^"]*', chapter_page)
+                if img_urls:
+                    imgList = [re.sub(r'/\d+$', '/0', url) for url in img_urls]
+                    return imgList
+            except:
+                pass
             retry_num += 1
             if retry_num >= retry_max:
                 raise
             print('下载失败，重试' + str(retry_num) + '次')
+            sleep(2)
+        except Exception as e:
+            retry_num += 1
+            if retry_num >= retry_max:
+                raise
+            print('下载失败，重试' + str(retry_num) + '次, 错误: ' + str(e))
             sleep(2)
 
     return []
